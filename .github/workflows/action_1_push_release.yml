@@ -17,7 +17,7 @@ jobs:
 
       - name: Add the public repository as a remote
         run: |
-          git remote add public https://github.com/'nhs-england-patient-safety/vte-risk-assessment.git
+          git remote add public https://github.com/nhs-england-patient-safety/vte-risk-assessment.git
           git remote -v
 
       - name: Read the release name and create a branch. Push branch to private and public.
