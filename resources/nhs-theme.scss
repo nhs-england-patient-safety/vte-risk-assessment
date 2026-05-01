@@ -1,0 +1,247 @@
+/*-- scss:defaults --*/
+// NHS Colors  
+$nhs-blue: #005EB8;  
+$nhs-dark-blue: #003087;  
+$nhs-bright-blue: #0072CE;  
+$nhs-light-blue: #41B6E6;  
+$nhs-aqua-blue: #00A9CE;  
+$nhs-dark-green: #006747;  
+$nhs-green: #009639;  
+$nhs-light-green: #78BE20;  
+$nhs-blue-green: #00A499;  
+$nhs-purple: #330072;  
+$nhs-dark-pink: #7C2855;  
+$nhs-pink: #AE2573;  
+$nhs-dark-red: #8A1538;  
+$nhs-red: #DA291C;  
+$nhs-black: #231F20;  
+$nhs-dark-grey: #425563;  
+$nhs-mid-grey: #768692;  
+$nhs-pale-grey: #E8EDEE;  
+$nhs-white: #FFFFFF;  
+
+// Base colors
+$body-bg: white;
+$body-color: $nhs-black;
+$link-color: $nhs-blue;
+$code-block-bg: $nhs-pale-grey;
+$code-color: $nhs-dark-grey;
+
+// Fonts
+$font-family-sans-serif: "Arial", sans-serif;
+$headings-font-family: "Arial", sans-serif;
+
+// Headings
+$h1-font-size: 2rem;
+$h2-font-size: 1.5rem;
+$h3-font-size: 1.25rem;
+
+// Custom variables
+$sidebar-bg: $nhs-pale-grey;
+$sidebar-fg: $nhs-dark-grey;
+$navbar-bg: $nhs-blue;
+$navbar-fg: white;
+$toc-active-border: $nhs-blue;
+
+/*-- scss:rules --*/
+  
+// Navbar styling
+.navbar {
+  background-color: $navbar-bg;
+  color: $navbar-fg;
+  
+  .navbar-title {
+    font-weight: bold;
+  }
+  
+  .nav-link {
+    color: $navbar-fg !important;
+    &:hover {
+      color: darken($navbar-fg, 10%) !important;
+    }
+  }
+}
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  color: $nhs-blue;
+  font-weight: bold;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+// Headings section number
+.header-section-number {
+  color: $nhs-blue;
+  font-weight: bold;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+
+// Add margin to section titles for better spacing
+.section {
+  margin-top: 2rem;
+}
+
+// Tables
+table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+  
+  thead {
+    background-color: $nhs-blue;
+    color: white;
+    
+    th {
+      padding: 0.5rem;
+      border: 1px solid $nhs-mid-grey;
+    }
+  }
+  
+  tbody {
+    td {
+      padding: 0.5rem;
+      border: 1px solid $nhs-pale-grey;
+    }
+    
+    tr:nth-child(even) {
+      background-color: $nhs-pale-grey;
+    }
+  }
+}
+
+// TOC
+
+.nav-link.active .header-section-number {
+  color: $nhs-blue;
+  font-weight: normal;
+}
+
+.toc-active .header-section-number {
+  color: $nhs-dark-grey;
+  font-weight: normal;
+  }
+
+
+#TOC {
+  background-color: $sidebar-bg;
+  padding: 1rem;
+  border-radius: 4px;
+  
+  .toc-active {
+    border-left: 3px solid $toc-active-border;
+    font-weight: bold;
+    padding-left: 0.5rem;
+  }
+  
+  // Improved TOC styling
+  ul {
+    padding-left: 1rem;
+  }
+  
+  a {
+    color: $nhs-dark-grey;
+    text-decoration: none;
+    
+    &:hover {
+      color: $nhs-blue;
+    }
+  }
+}
+
+// Section dividers
+.section-divider {
+  border-bottom: 2px solid $nhs-pale-grey;
+  margin-bottom: 2rem;
+  padding-bottom: 0.5rem;
+}
+
+// Alert boxes
+.alert-info {
+  background-color: lighten($nhs-light-blue, 30%);
+  border-left: 5px solid $nhs-light-blue;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.alert-warning {
+  background-color: lighten($nhs-red, 40%);
+  border-left: 5px solid $nhs-red;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+// NHS Box - enhanced styling
+.nhs-box {
+  border: 1px solid $nhs-blue;
+  border-radius: 4px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  
+  h3 {
+    color: $nhs-blue;
+    margin-top: 0;
+    border-bottom: 1px solid $nhs-pale-grey;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  h4 {
+    color: $nhs-dark-grey;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  ul {
+    margin-bottom: 0.5rem;
+  }
+}
+
+// Executive summary box styling
+.nhs-box:first-of-type {
+  background-color: lighten($nhs-pale-grey, 2%);
+  border-left: 4px solid $nhs-blue;
+}
+
+// Disclaimer styling (as requested - red text)
+.disclaimer {
+  color: $nhs-red;
+  font-weight: bold;
+  border: 1px dashed $nhs-red;
+  padding: 1rem;
+  margin: 1rem 0;
+  background-color: lighten($nhs-red, 45%);
+}
+
+// Print styles
+@media print {
+  body {
+    font-size: 10pt;
+  }
+  
+  h1 {
+    font-size: 18pt;
+  }
+  
+  h2 {
+    font-size: 14pt;
+  }
+  
+  h3 {
+    font-size: 12pt;
+  }
+  
+  .navbar, #TOC {
+    display: none;
+  }
+  
+  .nhs-box {
+    break-inside: avoid;
+    border: 1px solid #ccc;
+    box-shadow: none;
+  }
+}

@@ -1,0 +1,396 @@
+---
+title: "Venous thromboembolism risk assessment data collection"
+format: 
+   html: 
+     embed-resources: false
+     df-print: kable
+     toc: true
+     toc-location: left
+     number-sections: true
+     theme: 
+      - default
+      - ../resources/nhs-theme.scss
+
+execute:
+  echo: false
+editor: visual
+---
+
+```{r sourcing scripts, include=FALSE}
+source("params.R", local = knitr::knit_global())
+source("../R/functions.R", local = knitr::knit_global())
+source("connections.R", local = knitr::knit_global())
+source("ingestion.R", local = knitr::knit_global())
+source("processing.R", local = knitr::knit_global())
+source("commentary/bullets.R", local = knitr::knit_global())
+source("commentary/tables.R", local = knitr::knit_global())
+source("commentary/extract_figures.R", local = knitr::knit_global())
+source("commentary/charts.R", local = knitr::knit_global())
+source("validation.R", local = knitr::knit_global())
+source("output.R", local = knitr::knit_global())
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+## `r time_period_title`{.unnumbered}
+
+Since the data collection restarted in 2025, we have been working with providers to understand and improve data quality for this collection. Internal analysis comparing reported denominators with unpublished activity data suggested discrepancies in some reported eligible admissions; subsequent work with individual providers has identified issues around:
+
+-   patients not included in submissions when the data collection methodology says to include them, such as maternity patients, day cases, and admissions with length of stay below certain thresholds
+
+-   independent providers including patients who are not NHS‑funded
+
+-   patients cohorted in line with NICE guidelines but not included in the submission
+
+-   submissions based on incomplete, sample, or audit data
+
+We are continuing to work with providers to improve data quality, prioritising those providers reporting the largest discrepancies, and we expect to identify further data quality issues as this work continues. More detail in relation to specific data quality issues identified is available in the ‘Data quality’ section of this report. The latest published quarter provides the most accurate and current position. Every six months the most recent two quarters are revised, ensuring they are updated to reflect the most recent and complete data.
+
+```{r revised publication heading }
+#| echo: false
+#| results: 'asis'
+if (revisions_notes != "") {
+  cat("## Revised publication {.unnumbered}\n")
+}
+```
+
+`r revisions_notes`
+
+## Background
+
+Healthcare associated venous thromboembolism (VTE), commonly known as blood clots, is a significant international patient safety issue. The first step in preventing death and disability from VTE is to identify those at risk so that preventative treatments (prophylaxis) can be given. This data collection quantifies the numbers of hospital admissions (aged 16 and over at the time of admission) who are being risk assessed for VTE to identify those who should be given appropriate prophylaxis based on guidance from the [National Institute for Health and Care Excellence (NICE)](https://www.nice.org.uk/guidance/conditions-and-diseases/cardiovascular-conditions/embolism-and-thrombosis). Such measures have the potential to save many lives each year.
+
+This data collection is intended to embed VTE risk assessment across the NHS and will be critical in evaluating the impact of the National VTE Prevention Programme on improving health outcomes for patients. The VTE risk assessment is a former national CQUIN indicator and is a National Quality Requirement in the [NHS Standard Contract for 2025/26](https://www.england.nhs.uk/publication/nhs-standard-contract-2025-26-technical-guidance/). It sets an operational standard of 95% of patients aged 16 and over being risk assessed for VTE on admission each month. Prior to April 2019 the operational standard related to adult patients aged 18 and over.
+
+The data collection asks for the following information:
+
+1.  number of admitted patients (aged 16 and over at the time of admission) in the month who have been risk assessed for VTE within 14 hours of admission to hospital using the criteria in the NICE guidance.
+
+2.  total number of admitted patients (aged 16 and over at the time of admission) in the month.
+
+The percentage of admitted patients (aged 16 and over at the time of admission) in the month who have been risk assessed for VTE on admission is automatically calculated from items (1) and (2).
+
+All providers of NHS-funded acute care (that is, NHS trusts and foundation trusts and independent sector providers of acute NHS services) must complete this data collection. Providers of non-acute health services only are not asked to complete this data collection, although they should be aware that all patients should be protected from unnecessary risk of VTE.
+
+For the purposes of this collection, risk assessment should be completed on admitted patients within 14 hours of admission; NICE guidelines state that where required, pharmacological thromboprophylaxis should be started within 14 hours of admission, therefore risk assessment should be completed prior to this, unless otherwise stated in the population-specific recommendations.  
+
+This data collection is a census of all patients – it is not appropriate to use sampling methodologies to produce estimates.
+
+## Download data
+
+-   [CSV link]{.underline}
+
+Note the date of each month of collection is given as the first of the month in the CSV file.
+
+## Summary of the data collection
+
+The key results for the data collected on the number and percentage of VTE risk assessments on admitted patients aged 16 and over to NHS-funded acute care (NHS trusts, NHS foundation trusts and independent sector providers) in `r time_period_paragraph` are:
+
+-   the percentage of admitted patients risk assessed for VTE in England was `r total_percent`%. Of the `r total_admitted` million admitted patients for whom data was reported in this collection, `r total_vte_assessed` million were risk assessed for VTE on admission.
+
+-   the percentage of admitted patients risk assessed for VTE was `r percentage_acute` for NHS acute care providers and `r percentage_independent` for independent sector providers. NHS acute care providers carry out `r proportion_acute`% of all VTE risk assessments.
+
+-   the percentage of admitted patients risk assessed for VTE for each region was: East of England `r region_e`%, London `r region_ldn`%, Midlands `r region_mid`%, North East and Yorkshire `r region_ne_y`%, North West `r region_nw`%, South East `r region_se`% and South West `r region_sw`%.
+
+-   `r icb_met_percent`% of integrated care boards (ICBs) (`r icb_met` of the `r icb_total` ICBs) carried out a VTE risk assessment for 95% or more of their admissions (the NHS Standard Contract operational standard).
+
+## Findings
+
+### Percentage of total admissions risk assessed for VTE in England
+
+In `r time_period_readable` all providers of NHS-funded acute care (NHS trusts, foundation trusts and independent sector providers) reported `r total_admitted` million eligible admissions. Of these, `r total_vte_assessed` million (`r total_percent`%) received a VTE risk assessment on admission. Comparison to previous collection figures can be seen in Figure 2.
+
+<br>
+
+**Figure 1: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by month (`r time_period_readable`)**
+
+```{r fig 1 vte by month all providers, fig.width=8.2}
+#| echo: false
+vte_by_month_all_providers
+```
+
+<br>
+
+**Table 1: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by month (`r time_period_readable`)**
+
+```{r table percentage England}
+#| echo: false
+kable(table_percentage_england_month, align ="lrrr")
+
+```
+
+<br>
+
+**Figure 2: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in previous collections**
+
+```{r fig 2 historical vte by month, fig.width=8.2}
+#| echo: false
+historical_vte_by_month
+```
+
+<br>
+
+**Table 2: The 5 NHS acute care providers with the highest percentage of admitted patients being risk assessed (`r time_period_readable`)**
+
+```{r top 5 NHS acute providers}
+#| echo: false
+kable(top_5_acute, align ="llrrr")
+```
+
+<br>
+
+### Percentage of total admissions risk assessed for VTE in England by organisation type
+
+In `r time_period_readable`, the percentage of admitted patients (aged 16 and over at the time of admission) receiving a VTE risk assessment was `r percentage_acute` for NHS acute care providers and `r percentage_independent` for independent sector providers. NHS acute care providers carry out `r proportion_acute`% of all VTE risk assessments and independent sector providers carry out `r proportion_independent`%.
+
+<br>
+
+**Figure 3: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by organisation type and by month (`r time_period_readable`)**
+
+```{r fig 3 vte by month by org type, fig.width=8.2}
+#| echo: false
+vte_by_month_by_org_type
+```
+
+<br>
+
+**Table 3: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by organisation type by month (`r time_period_readable`)**
+
+```{r percentage by org type}
+#| echo: false
+
+kable(table_percentage_org_type_month, align ="lrrr")
+
+```
+
+<br>
+
+### Percentage of total admissions risk assessed for VTE in England by region
+
+`r regions_achieved_paragraph`
+
+<br>
+
+**Figure 4: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region (`r time_period_readable`)**
+
+```{r fig 4 vte by region, fig.width=8.2}
+#| echo: false
+vte_by_region
+
+```
+
+<br>
+
+**Table 4: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region (`r time_period_readable`)**
+
+```{r}
+#| echo: false
+kable(table_region_england, align ="lr")
+
+```
+
+<br>
+
+### Percentage of total admissions risk assessed for VTE in England by region and organisation type
+
+<br>
+
+**Figure 5: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region and organisation type (`r time_period_readable`)**
+
+```{r fig 5 vte by region and org type, fig.height=7, fig.width=8.2}
+#| echo: false
+vte_by_region_by_org_type 
+```
+
+<br>
+
+**Table 5: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region and organisation type (`r time_period_readable`)**
+
+```{r}
+#| echo: false
+kable(table_region_org, align ="lrr")
+```
+
+<br>
+
+### Percentage of total admissions risk assessed for VTE in England by integrated care board (ICB).
+
+In `r time_period_readable`, `r icb_met_percent`% of ICBs (`r icb_met` of the `r icb_total` ICBs) carried out a VTE risk assessment for 95% or more of their admissions (the NHS Standard Contract operational standard).
+
+<br>
+
+**Figure 6: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by integrated care board (ICB) (`r time_period_readable`).**
+
+\* denotes where an ICB has met the 95% operational standard.
+
+```{r fig 6 icb map plot, fig.height=9, fig.width=7.2}
+#| echo: false
+icb_map_plot
+```
+
+<br>
+
+**Table 6: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by integrated care board (ICB) (`r time_period_readable`)**
+
+```{r}
+#| echo: false
+kable(icb_table, align ="lrl")
+```
+
+<br>
+
+### Percentage of total admissions risk assessed for VTE in England by total admissions
+
+Figure 7 is a funnel plot of the total admissions for each provider in the quarter against the percentage of total admissions risk assessed for VTE. The funnel plot limits have been adjusted for overdispersion. Providers that fall below the 99.8% overdispersed lower limit have been labelled in figure 7 and listed in table 7.
+
+<br>
+
+**Figure 7: Percentage of total admissions risk assessed for VTE in England by total admissions for provider in quarter (`r time_period_readable`).**
+
+```{r fig 7 admissions percentage funnel, fig.height=6, fig.width=8.2}
+#| echo: false
+admissions_percentage_funnel
+```
+
+<br>
+
+**Table 7: The providers that fall below the 99.8% overdispersed lower limit in quarter (`r time_period_readable`)**
+
+```{r lower providers below lower limit}
+#| echo: false
+kable(funnel_outliers, align ="lllrrr")
+```
+
+<br>
+
+### Number of valid data returns
+
+-   the total number of valid data returns submitted by all providers of NHS-funded acute care in each month of `r time_period_title` was `r distinct_trusts_str`.
+
+-   the number of valid NHS acute care providers submitting a data return in each month of `r time_period_title` was `r distinct_acute_str`.
+
+-   for independent sector providers, it was `r distinct_independent_str` in each month of `r time_period_title`.
+
+## Data quality
+
+### General
+
+-   The data collection is mandatory and risk assessments should be completed on admitted patients within 14 hours of admission. It is a requirement to report on admitted patients aged 16 and over and providers are required to submit information based on a census of patients. The following are excluded from the data:
+
+    -   providers that submit data with risk assessments completed after 14 hours of admission.
+
+    -   providers that use different age criteria.
+
+    -   providers that submit data based on a sample or audit of patients.
+
+    -   providers that did not have any admissions in a particular month.
+
+    -   children's hospitals: Alder Hey Children's NHS Foundation Trust (RBS), Great Ormond Street Hospital for Children NHS Foundation Trust (RP4) and Sheffield Children's NHS Foundation Trust (RCU).
+
+`r data_quality`
+
+```{r organisation changes heading }
+#| echo: false
+#| results: 'asis'
+if (org_change_comments != "") {
+  cat("### Organisation changes\n")
+}
+
+```
+
+`r org_change_comments`
+
+```{r Non-acute NHS trusts heading }
+#| echo: false
+#| results: 'asis'
+if (non_acute_comments != "") {
+  cat("### Non-acute NHS trusts\nThe following non-acute NHS trusts are not in included in the figures:")
+}
+
+```
+
+`r non_acute_comments`
+
+```{r Sample, audit or partially submitted data heading }
+#| echo: false
+#| results: 'asis'
+if (audit_comments != "") {
+  cat("### Sample, audit or partially submitted data\nThe following providers that submit data based on sample or audit of patients are not included in the figures:")
+}
+
+```
+
+`r audit_comments`
+
+```{r Providers preparing to submit heading }
+#| echo: false
+#| results: 'asis'
+if (org_preparing_comments != "") {
+  cat("### Providers preparing to submit\nThe following providers are in the process of preparing to submit:")
+}
+
+```
+
+`r org_preparing_comments`
+
+```{r Zero admissions heading }
+#| echo: false
+#| results: 'asis'
+if (zero_admissions_comments != "") {
+  cat("### Zero admissions\nThe following providers submitted zero admissions for each month in the submitting period:")
+}
+
+```
+
+`r zero_admissions_comments`
+
+```{r no submissions heading }
+#| echo: false
+#| results: 'asis'
+if (no_submission_comments != "") {
+  cat("### No submissions received\nThe following providers did not submit data for this publication:")
+}
+
+```
+
+`r no_submission_comments`
+
+### Quality assurance
+
+Data quality assurance focuses on identifying missing data, data errors (for example the numerator should not be greater than the denominator) and data consistency over time. Any issues identified are discussed with providers and they are given the opportunity to clarify or resubmit their data within the quality assurance period.
+
+## Timings and publication
+
+Providers must collect data and submit it to the Strategic Data Collection Service run by NHS England. The deadline is the last working day of the month following the quarter end.
+
+Data are submitted and published according to the timings below:
+
+| Timing | Process |
+|------------------------------------|------------------------------------|
+| Month A (for example June) | Data are collected from patients in each provider for the quarter |
+| Month B (for example July) | Providers submit their data quarterly for the previous quarter with a deadline of the last working day of the month following the end of that quarter (for example Q1 data is submitted towards the end of July) |
+| Month C (for example August) | Data is quality assured |
+| Month D (for example September) | Data for the quarter is published on the NHS England website at the beginning of month D (for example Q1 data in early September) |
+
+## Guidance
+
+Guidance on the data collection is given in the 2025/26 NHS Standard Contract and can be found at: <https://www.england.nhs.uk/publication/nhs-standard-contract-2025-26-technical-guidance/>
+
+## Additional information
+
+Please email press enquiries to NHS England Press Office at: [nhsengland.media\@nhs.net](mailto:nhsengland.media@nhs.net) or call 0113 825 0958.
+
+Your feedback is welcomed on the format, frequency and utility of this document, so that we can provide reports that are of most benefit, Please contact [patientsafety.analysis\@nhs.net](mailto:patientsafety.analysis@nhs.net) with any suggestions.
+
+The analysts with overall responsibility for this report are:
+
+**Joshua Mutio**\
+Lead Analyst\
+Patient Safety, Medical Directorate Programmes\
+Data & Analytics\
+NHS England
+
+**David Hardy**\
+Senior Analyst\
+Patient Safety, Medical Directorate Programmes\
+Data & Analytics\
+NHS England
