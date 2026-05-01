@@ -1,6 +1,7 @@
 library(sf)
 library(knitr)
 library(janitor)
+library(readr)
 
 # //////////////////////////////////////////////////////////////////////////////
 #
@@ -105,7 +106,7 @@ if (developer_mode == FALSE) {
 
 
 # list all files
-files <- list_storage_files(cont, folder, recursive = FALSE, info = "all")
+files <- list_storage_files(cont, tac_folder, recursive = FALSE, info = "all")
 
 # get latest file
 latest_file <- files |>
@@ -182,52 +183,36 @@ if (developer_mode == FALSE) {
 message("retrieving ICB boundaries from geoportal")
 nhs_icb <- st_read("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Integrated_Care_Boards_April_2023_EN_BFE/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson")
 
-
 # //////////////////////////////////////////////////////////////////////////////
 #
-#  Upload copies to sharepoint  ----
+#  Upload copies to datalake  ----
 #
 # //////////////////////////////////////////////////////////////////////////////
-
 if (developer_mode == FALSE) {
-  # Uploading UDAL files to sharepoint for quicker access during development
-  map_up <- reslib$get_item("VTE/vte-risk-assessment/mapping-data/")
-  map_up$save_dataframe(ods_provider_hierarchies, 
-                        "ods_provider_hierarchies.csv")
-  map_up$save_dataframe(ods_sites, "ods_sites.csv")
-  map_up$save_dataframe(successor_orgs, "successor_orgs.csv")
-  map_up$save_dataframe(admissions, "admissions.csv")
-  map_up$save_dataframe(seft_udal, "seft_udal.csv")
-  map_up$save_dataframe(udal_process_time, "udal_process_time.csv")
-  map_up$save_dataframe(api_mapping_table, "api_mapping_table.csv")
+  # Uploading UDAL files to datalake for quicker access during development
+  datalake_upload(cont, ods_provider_hierarchies, vte_store_folder)
+  datalake_upload(cont, ods_sites, vte_store_folder)
+  datalake_upload(cont, successor_orgs, vte_store_folder)
+  datalake_upload(cont, admissions, vte_store_folder)
+  datalake_upload(cont, seft_udal, vte_store_folder)
+  datalake_upload(cont, udal_process_time, vte_store_folder)
+  datalake_upload(cont, api_mapping_table, vte_store_folder)
 }
 
 # //////////////////////////////////////////////////////////////////////////////
 #
-#  Ingest from sharepoint  ----
+#  Ingest from datalake  ----
 #
 # //////////////////////////////////////////////////////////////////////////////
-
-if (developer_mode == TRUE) {
-ods_provider_hierarchies <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/ods_provider_hierarchies.csv",
-  show_col_types = FALSE)
-ods_sites <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/ods_sites.csv",
-  show_col_types = FALSE)
-successor_orgs <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/successor_orgs.csv",
-  show_col_types = FALSE)
-admissions <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/admissions.csv",
-  show_col_types = FALSE)
-seft_udal <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/seft_udal.csv",
-  show_col_types = FALSE)
-udal_process_time <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/udal_process_time.csv",
-  show_col_types = FALSE)
-api_mapping_table <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/api_mapping_table.csv",
-  show_col_types = FALSE)
+if (developer_mode == TRUE){
+  ods_provider_hierarchies <- datalake_download(cont, "ods_provider_hierarchies", 
+                                              vte_store_folder)
+  ods_sites <- datalake_download(cont, "ods_sites", vte_store_folder)
+  successor_orgs <- datalake_download(cont, "successor_orgs", vte_store_folder)
+  admissions <- datalake_download(cont, "admissions", vte_store_folder)
+  seft_udal <- datalake_download(cont, "seft_udal", vte_store_folder)
+  udal_process_time <- datalake_download(cont, "udal_process_time",
+                                         vte_store_folder)
+  api_mapping_table <- datalake_download(cont, "api_mapping_table",
+                                         vte_store_folder)
 }

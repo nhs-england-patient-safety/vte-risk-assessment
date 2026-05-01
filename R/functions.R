@@ -6,6 +6,10 @@ library(AzureStor)
 library(AzureAuth)
 library(AzureKeyVault)
 library(httpuv)
+library(precommit)
+
+precommit::use_precommit()
+precommit::path_precommit_exec()
 
 #  Readable time periods
 time_period_readable <- paste0(substring(time_period, 5, 6), " ", 
@@ -111,6 +115,33 @@ token <- tryCatch(
 
 # outlook variable 
 outlook <- get_business_outlook(tenant = "nhs")
+
+# upload to data lake
+datalake_upload <- function(container, df, folder) {
+  url_name <- paste0(folder, "/",
+                     as.character(substitute(df)),
+                     ".csv")
+  r_con <- rawConnection(raw(), "wb")
+  write.csv(df, r_con, row.names = FALSE)
+  raw_data <- rawConnectionValue(r_con)
+  storage_upload(
+    container,
+    src = rawConnection(raw_data, "rb"),
+    dest = url_name
+  )
+  close(r_con)
+}
+
+# get latest file from data lake
+datalake_download <- function(container, df, folder) {
+  url_name <- paste0(folder, "/",
+                     as.character(df),
+                     ".csv")
+  
+  table <- read_csv(storage_download(container, url_name, dest = NULL))
+  return(table)
+}
+
 
 # sharepoint variables
 site_url <- Sys.getenv("sharepoint_url")
