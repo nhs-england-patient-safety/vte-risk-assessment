@@ -437,7 +437,7 @@ funnel_table_preparation <- df_joined |>
   ) |>
   mutate(percentage = x / n) |>
   ungroup() |>
-  left_join(api_mapping_table, join_by(org_code == api_org_code)) |>
+  left_join(mapping_table, join_by(org_code == api_org_code)) |>
   mutate(
     "Provider" = gsub("And","and",
                       gsub("Nhs","NHS",
