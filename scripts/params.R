@@ -9,7 +9,18 @@ draft_emails_sus <- FALSE
 draft_emails_non_submitters <- FALSE
 
 # Input the date of the report
-time_period <- "VTE-Q2-2025-26"
+time_period <- "VTE-Q3-2025-26"
+
+# API toggle when boundaries have changed but we need old mapping files
+# E.g Q4 25/26 when ICB boundaries changed in April 2026, need to use pre 
+# April 2026 boundaries for the Q4 report. 
+# developer_mode needs to be FALSE
+# TRUE = API is used. FALSE = saved datalake file used
+api_toggle <- FALSE
+
+# Saves a copy of ods_provider_hierarchies files in datalake
+# developer_mode needs to be FALSE
+copy_ods_files <- TRUE
 
 # How many quarters to go back for charts
 previous_quarters <- 20
