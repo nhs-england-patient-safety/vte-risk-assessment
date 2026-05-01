@@ -96,6 +96,57 @@ if (developer_mode == FALSE) {
   dbDisconnect(con_udal)
 }
 
+
+# //////////////////////////////////////////////////////////////////////////////
+#
+#  Upload copies to sharepoint  ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+if (developer_mode == FALSE) {
+  # Uploading UDAL files to sharepoint for quicker access during development
+  map_up <- reslib$get_item("VTE/vte-risk-assessment/mapping-data/")
+  map_up$save_dataframe(ods_provider_hierarchies, 
+                        "ods_provider_hierarchies.csv")
+  map_up$save_dataframe(ods_sites, "ods_sites.csv")
+  map_up$save_dataframe(successor_orgs, "successor_orgs.csv")
+  map_up$save_dataframe(admissions, "admissions.csv")
+  map_up$save_dataframe(seft_udal, "seft_udal.csv")
+  map_up$save_dataframe(udal_process_time, "udal_process_time.csv")
+  map_up$save_dataframe(mapping_table, "mapping_table.csv")
+}
+
+# //////////////////////////////////////////////////////////////////////////////
+#
+#  Ingest from sharepoint  ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+if (developer_mode == TRUE) {
+  ods_provider_hierarchies <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/mapping-data/ods_provider_hierarchies.csv",
+    show_col_types = FALSE)
+  ods_sites <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/mapping-data/ods_sites.csv",
+    show_col_types = FALSE)
+  successor_orgs <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/mapping-data/successor_orgs.csv",
+    show_col_types = FALSE)
+  admissions <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/mapping-data/admissions.csv",
+    show_col_types = FALSE)
+  seft_udal <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/mapping-data/seft_udal.csv",
+    show_col_types = FALSE)
+  udal_process_time <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/mapping-data/udal_process_time.csv",
+    show_col_types = FALSE)
+  mapping_table <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/mapping-data/mapping_table.csv",
+    show_col_types = FALSE)
+}
+
+
 # //////////////////////////////////////////////////////////////////////////////
 #
 ##  Download from Data lake ----
@@ -174,32 +225,6 @@ if (api_toggle == FALSE) {
 
 # //////////////////////////////////////////////////////////////////////////////
 #
-##  Data lake (TAC table) ----
-#
-# //////////////////////////////////////////////////////////////////////////////
-
-
-# list all files
-files <- list_storage_files(cont, folder, recursive = FALSE, info = "all")
-
-# get latest file
-latest_file <- files |>
-  mutate(
-    date_str = str_extract(name, "\\d{4}_\\d{2}_\\d{2}"),
-    file_date = ymd(str_replace_all(date_str, "_", "-"))
-  ) |>
-  filter(!is.na(file_date)) |>
-  arrange(desc(file_date)) |>
-  slice(1) |> 
-  pull(name)
-
-# reading in TAC table
-trust_accounts_consolidation_table <- 
-  read_csv(storage_download(cont, latest_file, dest = NULL))
-
-
-# //////////////////////////////////////////////////////////////////////////////
-#
 ##  FHIR API query  ----
 #
 # //////////////////////////////////////////////////////////////////////////////
@@ -256,53 +281,3 @@ if (developer_mode == FALSE & api_toggle == TRUE) {
 
 message("retrieving ICB boundaries from geoportal")
 nhs_icb <- st_read("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Integrated_Care_Boards_April_2023_EN_BFE/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson")
-
-
-# //////////////////////////////////////////////////////////////////////////////
-#
-#  Upload copies to sharepoint  ----
-#
-# //////////////////////////////////////////////////////////////////////////////
-
-if (developer_mode == FALSE) {
-  # Uploading UDAL files to sharepoint for quicker access during development
-  map_up <- reslib$get_item("VTE/vte-risk-assessment/mapping-data/")
-  map_up$save_dataframe(ods_provider_hierarchies, 
-                        "ods_provider_hierarchies.csv")
-  map_up$save_dataframe(ods_sites, "ods_sites.csv")
-  map_up$save_dataframe(successor_orgs, "successor_orgs.csv")
-  map_up$save_dataframe(admissions, "admissions.csv")
-  map_up$save_dataframe(seft_udal, "seft_udal.csv")
-  map_up$save_dataframe(udal_process_time, "udal_process_time.csv")
-  map_up$save_dataframe(mapping_table, "mapping_table.csv")
-}
-
-# //////////////////////////////////////////////////////////////////////////////
-#
-#  Ingest from sharepoint  ----
-#
-# //////////////////////////////////////////////////////////////////////////////
-
-if (developer_mode == TRUE) {
-ods_provider_hierarchies <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/ods_provider_hierarchies.csv",
-  show_col_types = FALSE)
-ods_sites <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/ods_sites.csv",
-  show_col_types = FALSE)
-successor_orgs <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/successor_orgs.csv",
-  show_col_types = FALSE)
-admissions <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/admissions.csv",
-  show_col_types = FALSE)
-seft_udal <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/seft_udal.csv",
-  show_col_types = FALSE)
-udal_process_time <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/udal_process_time.csv",
-  show_col_types = FALSE)
-mapping_table <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/mapping_table.csv",
-  show_col_types = FALSE)
-}
