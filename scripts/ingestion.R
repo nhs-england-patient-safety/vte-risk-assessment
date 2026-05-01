@@ -96,6 +96,81 @@ if (developer_mode == FALSE) {
   dbDisconnect(con_udal)
 }
 
+# //////////////////////////////////////////////////////////////////////////////
+#
+##  Download from Data lake ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+# Trust Accounts Consolidation Table (TAC)
+trust_accounts_consolidation_table <- latest_file(tac_folder)
+
+
+# //////////////////////////////////////////////////////////////////////////////
+#
+##  Upload ods_provider_hierarchies to Data Lake  ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+# storing copy of ods_provider_hierarchies from UDAL
+if (copy_ods_files == TRUE) {
+  datalake_upload(ods_provider_hierarchies,ods_provider_folder)
+}
+
+# //////////////////////////////////////////////////////////////////////////////
+#
+##  Using UDAL instead of API ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+# Using UDAL instead of API when boundaries change 
+if (api_toggle == FALSE) {
+  
+  # Provider Hierarchies table from datalake (stored from step above)
+  latest_ods_provider_hierarchies_table <- latest_file(ods_provider_folder)
+  
+  # ODS sites from UDAL for operated by names
+  ods_sites_cleaned <- ods_sites |> clean_names() |> 
+    select(site_code, site_name, trust_code, trust_name)
+  
+  # Successor file from UDAL for successors
+  successor_orgs_cleaned <- successor_orgs |>  clean_names() |> 
+    left_join(latest_ods_provider_hierarchies_table, 
+              join_by(successor_organisation_code == organisation_code)) |> 
+    distinct(organisation_code, .keep_all = TRUE) |>
+    select(organisation_code,
+           api_successor_code = successor_organisation_code,
+           api_successor_name = organisation_name) 
+  
+  # Bring together UDAL files and rename to match API
+  mapping_table <- latest_ods_provider_hierarchies_table |> 
+    left_join(ods_sites_cleaned, join_by(organisation_code == site_code)) |> 
+    left_join(successor_orgs_cleaned, join_by(organisation_code == organisation_code)) |> 
+    mutate(org_type = case_when(
+      ods_organisation_type == "INDEPENDENT SECTOR H/C PROVIDER SITE" ~ 
+        "Independent provider",
+      ods_organisation_type == "INDEPENDENT SECTOR HEALTHCARE PROVIDER" ~ 
+        "Independent provider",
+      ods_organisation_type == "NHS TRUST" ~ "NHS acute care provider",
+      .default = NA)
+    ) |> 
+    select(api_org_code = organisation_code,
+           api_org_name = organisation_name,
+           api_legal_end = effective_to,
+           api_operational_end = effective_to,
+           api_icb_code = stp_code,
+           api_icb_name = stp_name,
+           api_region_code = region_code,
+           api_region_name = region_name,
+           api_operated_by_code = trust_code,
+           api_operated_by_name = trust_name,
+           api_role_name = ods_organisation_type,
+           api_effective_to = effective_to,
+           api_successor_code,
+           api_successor_name,
+           org_type)
+}
+
 
 # //////////////////////////////////////////////////////////////////////////////
 #
@@ -130,7 +205,7 @@ trust_accounts_consolidation_table <-
 # //////////////////////////////////////////////////////////////////////////////
 
 
-if (developer_mode == FALSE) {
+if (developer_mode == FALSE & api_toggle == TRUE) {
   
   # distinct org codes for api query
   # org codes from SDCS
@@ -151,7 +226,7 @@ if (developer_mode == FALSE) {
     pull(org_code)
   
   # creating api mapping table
-  api_mapping_table <- map_dfr(distinct_org_codes, run_api_calls) |> 
+  mapping_table <- map_dfr(distinct_org_codes, run_api_calls) |> 
     rename(api_org_code = code,
            api_org_name = display, 
            api_role_code = primaryRole, 
@@ -199,7 +274,7 @@ if (developer_mode == FALSE) {
   map_up$save_dataframe(admissions, "admissions.csv")
   map_up$save_dataframe(seft_udal, "seft_udal.csv")
   map_up$save_dataframe(udal_process_time, "udal_process_time.csv")
-  map_up$save_dataframe(api_mapping_table, "api_mapping_table.csv")
+  map_up$save_dataframe(mapping_table, "mapping_table.csv")
 }
 
 # //////////////////////////////////////////////////////////////////////////////
@@ -227,7 +302,7 @@ seft_udal <- reslib$load_dataframe(
 udal_process_time <- reslib$load_dataframe(
   "VTE/vte-risk-assessment/mapping-data/udal_process_time.csv",
   show_col_types = FALSE)
-api_mapping_table <- reslib$load_dataframe(
-  "VTE/vte-risk-assessment/mapping-data/api_mapping_table.csv",
+mapping_table <- reslib$load_dataframe(
+  "VTE/vte-risk-assessment/mapping-data/mapping_table.csv",
   show_col_types = FALSE)
 }
