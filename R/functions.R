@@ -112,6 +112,41 @@ token <- tryCatch(
     )}
 )
 
+# get latest file from data lake
+latest_file <- function(folder) {
+  latest_file <- list_storage_files(cont, folder, recursive = FALSE, info = "all") |> 
+    mutate(
+      date_str = str_extract(name, "\\d{4}_\\d{2}_\\d{2}"),
+      file_date = ymd(str_replace_all(date_str, "_", "-"))
+    ) |>
+    filter(!is.na(file_date)) |>
+    arrange(desc(file_date)) |>
+    # filter only for files created before end of selected quarter
+    filter(file_date <= last_day_of_quarter) |> 
+    slice(1) |> 
+    pull(name)
+  
+  table <- read_csv(storage_download(cont, latest_file, dest = NULL)) |> 
+    clean_names()
+  return(table)
+}
+
+
+# upload to data lake
+datalake_upload <- function(df, folder) {
+  dated_name <- paste0(gsub("-", "_", as.character(Sys.Date())),".csv")
+  
+  temp_file <- tempfile(fileext = ".csv")
+  write.csv(df, temp_file, row.names = FALSE)
+  
+  storage_upload(
+    cont,
+    src = temp_file,
+    dest = paste0(folder,"/",dated_name)
+  )
+}
+
+
 # outlook variable 
 outlook <- get_business_outlook(tenant = "nhs")
 
