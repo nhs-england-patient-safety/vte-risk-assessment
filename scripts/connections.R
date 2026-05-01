@@ -8,7 +8,8 @@ dl_endp <-
   storage_endpoint("https://udalstdataanalysisprod.dfs.core.windows.net", 
                    token = token)
 cont <- storage_container(dl_endp, "analytics-projects")
-folder <- "PatientSafety/PatientSafety/trust_accounts_consolidation_(TAC)"
+tac_folder <- "PatientSafety/PatientSafety/trust_accounts_consolidation_(TAC)"
+ods_provider_folder <- "PatientSafety/PatientSafety/ods_provider_hierarchies"
 
 # UDAL
 if (developer_mode == FALSE) {
