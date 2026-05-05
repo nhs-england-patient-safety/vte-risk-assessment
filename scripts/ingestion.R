@@ -45,7 +45,7 @@ revisions_input <-
 # //////////////////////////////////////////////////////////////////////////////
 
 
-if (developer_mode == FALSE) {
+if (use_udal == TRUE) {
   message("retrieving admissions data from UDAL")
   admissions <- 
     tbl(con_udal, I("Reporting_MESH_APC.APCS_Core_Monthly_Snapshot")) |>
@@ -103,7 +103,7 @@ if (developer_mode == FALSE) {
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-if (developer_mode == FALSE) {
+if (use_udal == TRUE) {
   # Uploading UDAL files to sharepoint for quicker access during development
   map_up <- reslib$get_item("VTE/vte-risk-assessment/mapping-data/")
   map_up$save_dataframe(ods_provider_hierarchies, 
@@ -113,16 +113,15 @@ if (developer_mode == FALSE) {
   map_up$save_dataframe(admissions, "admissions.csv")
   map_up$save_dataframe(seft_udal, "seft_udal.csv")
   map_up$save_dataframe(udal_process_time, "udal_process_time.csv")
-  map_up$save_dataframe(mapping_table, "mapping_table.csv")
 }
 
 # //////////////////////////////////////////////////////////////////////////////
 #
-#  Ingest from sharepoint  ----
+#  Ingest UDAL and API files from sharepoint  ----
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-if (developer_mode == TRUE) {
+if (use_udal == FALSE) {
   ods_provider_hierarchies <- reslib$load_dataframe(
     "VTE/vte-risk-assessment/mapping-data/ods_provider_hierarchies.csv",
     show_col_types = FALSE)
@@ -175,7 +174,7 @@ if (copy_ods_files == TRUE) {
 # //////////////////////////////////////////////////////////////////////////////
 
 # Using UDAL instead of API when boundaries change 
-if (api_toggle == FALSE) {
+if (use_api == FALSE) {
   
   # Provider Hierarchies table from datalake (stored from step above)
   latest_ods_provider_hierarchies_table <- latest_file(ods_provider_folder)
@@ -229,8 +228,7 @@ if (api_toggle == FALSE) {
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-
-if (developer_mode == FALSE & api_toggle == TRUE) {
+if (use_udal == TRUE & use_api == TRUE) {
   
   # distinct org codes for api query
   # org codes from SDCS
@@ -270,6 +268,9 @@ if (developer_mode == FALSE & api_toggle == TRUE) {
       api_operational_end = ymd(api_operational_end), 
       api_effective_to = pmin(api_legal_end, api_operational_end, na.rm = TRUE),
     )
+  
+  # upload to sharepoint
+  map_up$save_dataframe(mapping_table, "mapping_table.csv")
 }
 
 
@@ -280,4 +281,8 @@ if (developer_mode == FALSE & api_toggle == TRUE) {
 # //////////////////////////////////////////////////////////////////////////////
 
 message("retrieving ICB boundaries from geoportal")
-nhs_icb <- st_read("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Integrated_Care_Boards_April_2023_EN_BFE/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson")
+if (last_day_of_quarter <= as.Date("2026-03-31")) {
+  nhs_icb <- st_read("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Integrated_Care_Boards_April_2023_EN_BFE/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson")
+} else {
+  nhs_icb <-st_read("DOESN'T EXIST YET")
+}

@@ -365,7 +365,7 @@ Providers must collect data and submit it to the Strategic Data Collection Servi
 Data are submitted and published according to the timings below:
 
 | Timing | Process |
-|------------------------------------|------------------------------------|
+|----|----|
 | Month A (for example June) | Data are collected from patients in each provider for the quarter |
 | Month B (for example July) | Providers submit their data quarterly for the previous quarter with a deadline of the last working day of the month following the end of that quarter (for example Q1 data is submitted towards the end of July) |
 | Month C (for example August) | Data is quality assured |
