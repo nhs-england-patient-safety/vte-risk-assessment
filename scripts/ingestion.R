@@ -45,7 +45,7 @@ revisions_input <-
 # //////////////////////////////////////////////////////////////////////////////
 
 
-if (use_udal == TRUE) {
+if (mode == "publish" | mode == "publish_legacy_mapping") {
   message("retrieving admissions data from UDAL")
   admissions <- 
     tbl(con_udal, I("Reporting_MESH_APC.APCS_Core_Monthly_Snapshot")) |>
@@ -103,7 +103,7 @@ if (use_udal == TRUE) {
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-if (use_udal == TRUE) {
+if (mode == "publish" | mode == "publish_legacy_mapping") {
   # Uploading UDAL files to sharepoint for quicker access during development
   map_up <- reslib$get_item("VTE/vte-risk-assessment/mapping-data/")
   map_up$save_dataframe(ods_provider_hierarchies, 
@@ -121,7 +121,7 @@ if (use_udal == TRUE) {
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-if (use_udal == FALSE) {
+if (mode == "local") {
   ods_provider_hierarchies <- reslib$load_dataframe(
     "VTE/vte-risk-assessment/mapping-data/ods_provider_hierarchies.csv",
     show_col_types = FALSE)
@@ -167,6 +167,58 @@ if (copy_ods_files == TRUE) {
   datalake_upload(ods_provider_hierarchies,ods_provider_folder)
 }
 
+
+# //////////////////////////////////////////////////////////////////////////////
+#
+##  FHIR API query  ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+if (mode == "publish") {
+  
+  # distinct org codes for api query
+  # org codes from SDCS
+  org_codes_sdcs <- reslib$load_dataframe(
+    "VTE/vte-risk-assessment/sdcs-data/sdcs_submitter_list.csv", 
+    show_col_types = FALSE
+  )  |> 
+    select(org_code = "Org Code")
+  
+  # org codes from submitters
+  org_codes_seft <- seft_udal |> 
+    select(org_code)
+  
+  # distinct org codes
+  distinct_org_codes <- bind_rows(org_codes_sdcs,org_codes_seft) |> 
+    distinct() |> 
+    arrange(org_code) |> 
+    pull(org_code)
+  
+  # creating api mapping table
+  mapping_table <- map_dfr(distinct_org_codes, run_api_calls) |> 
+    rename(api_org_code = code,
+           api_org_name = display, 
+           api_role_code = primaryRole, 
+           api_legal_end = legEndDate,
+           api_operational_end = opEndDate,
+           api_operationally_active = status,
+           api_icb_code = ICB,
+           api_region_code = NHSER,
+           api_operated_by_code = RE6,
+           api_successor_code = successor) |> 
+    left_join(role_lookup, join_by(api_role_code == api_role_code)) |>
+    left_join(icb_lookup, join_by(api_icb_code == api_icb_code)) |>
+    left_join(region_lookup, join_by(api_region_code == api_region_code)) |>
+    mutate(
+      api_legal_end = ymd(api_legal_end),         
+      api_operational_end = ymd(api_operational_end), 
+      api_effective_to = pmin(api_legal_end, api_operational_end, na.rm = TRUE),
+    )
+  
+  # upload to sharepoint
+  map_up$save_dataframe(mapping_table, "mapping_table.csv")
+}
+
 # //////////////////////////////////////////////////////////////////////////////
 #
 ##  Using UDAL instead of API ----
@@ -174,7 +226,7 @@ if (copy_ods_files == TRUE) {
 # //////////////////////////////////////////////////////////////////////////////
 
 # Using UDAL instead of API when boundaries change 
-if (use_api == FALSE) {
+if (mode == "publish_legacy_mapping") {
   
   # Provider Hierarchies table from datalake (stored from step above)
   latest_ods_provider_hierarchies_table <- latest_file(ods_provider_folder)
@@ -220,59 +272,6 @@ if (use_api == FALSE) {
            api_successor_name,
            org_type)
 }
-
-
-# //////////////////////////////////////////////////////////////////////////////
-#
-##  FHIR API query  ----
-#
-# //////////////////////////////////////////////////////////////////////////////
-
-if (use_udal == TRUE & use_api == TRUE) {
-  
-  # distinct org codes for api query
-  # org codes from SDCS
-  org_codes_sdcs <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/sdcs-data/sdcs_submitter_list.csv", 
-    show_col_types = FALSE
-  )  |> 
-    select(org_code = "Org Code")
-  
-  # org codes from submitters
-  org_codes_seft <- seft_udal |> 
-    select(org_code)
-  
-  # distinct org codes
-  distinct_org_codes <- bind_rows(org_codes_sdcs,org_codes_seft) |> 
-    distinct() |> 
-    arrange(org_code) |> 
-    pull(org_code)
-  
-  # creating api mapping table
-  mapping_table <- map_dfr(distinct_org_codes, run_api_calls) |> 
-    rename(api_org_code = code,
-           api_org_name = display, 
-           api_role_code = primaryRole, 
-           api_legal_end = legEndDate,
-           api_operational_end = opEndDate,
-           api_operationally_active = status,
-           api_icb_code = ICB,
-           api_region_code = NHSER,
-           api_operated_by_code = RE6,
-           api_successor_code = successor) |> 
-    left_join(role_lookup, join_by(api_role_code == api_role_code)) |>
-    left_join(icb_lookup, join_by(api_icb_code == api_icb_code)) |>
-    left_join(region_lookup, join_by(api_region_code == api_region_code)) |>
-    mutate(
-      api_legal_end = ymd(api_legal_end),         
-      api_operational_end = ymd(api_operational_end), 
-      api_effective_to = pmin(api_legal_end, api_operational_end, na.rm = TRUE),
-    )
-  
-  # upload to sharepoint
-  map_up$save_dataframe(mapping_table, "mapping_table.csv")
-}
-
 
 # //////////////////////////////////////////////////////////////////////////////
 #
