@@ -1,0 +1,24 @@
+name: Action 2 - Create Pull Request for Release Branch
+on:
+  push:
+    branches:
+    - release/*
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+    
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+    if: github.repository == 'nhs-england-patient-safety/vte-risk-assessment'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Create Pull Request
+        run: |
+          gh pr create --fill
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
