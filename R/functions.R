@@ -6,10 +6,7 @@ library(AzureStor)
 library(AzureAuth)
 library(AzureKeyVault)
 library(httpuv)
-library(precommit)
 
-precommit::use_precommit()
-precommit::path_precommit_exec()
 
 #  Readable time periods
 time_period_readable <- paste0(substring(time_period, 5, 6), " ", 
