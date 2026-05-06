@@ -7,7 +7,6 @@ library(AzureAuth)
 library(AzureKeyVault)
 library(httpuv)
 
-
 #  Readable time periods
 time_period_readable <- paste0(substring(time_period, 5, 6), " ", 
                                substring(time_period, 8, 11), "/", 
