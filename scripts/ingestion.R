@@ -269,5 +269,5 @@ message("retrieving ICB boundaries from geoportal")
 if (last_day_of_quarter <= as.Date("2026-03-31")) {
   nhs_icb <- st_read("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Integrated_Care_Boards_April_2023_EN_BFE/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson")
 } else {
-  nhs_icb <-st_read("DOESN'T EXIST YET")
+  nhs_icb <- st_read("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Integrated_Care_Boards_April_2026_Boundaries_EN_BFE/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson")
 }
