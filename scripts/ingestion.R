@@ -1,7 +1,6 @@
 library(sf)
 library(knitr)
 library(janitor)
-library(readr)
 
 # //////////////////////////////////////////////////////////////////////////////
 #
@@ -190,13 +189,13 @@ nhs_icb <- st_read("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/se
 # //////////////////////////////////////////////////////////////////////////////
 if (developer_mode == FALSE) {
   # Uploading UDAL files to datalake for quicker access during development
-  datalake_upload(cont, ods_provider_hierarchies, vte_store_folder)
-  datalake_upload(cont, ods_sites, vte_store_folder)
-  datalake_upload(cont, successor_orgs, vte_store_folder)
-  datalake_upload(cont, admissions, vte_store_folder)
-  datalake_upload(cont, seft_udal, vte_store_folder)
-  datalake_upload(cont, udal_process_time, vte_store_folder)
-  datalake_upload(cont, api_mapping_table, vte_store_folder)
+  datalake_upload(ods_provider_hierarchies, stored_files_folder)
+  datalake_upload(ods_sites, stored_files_folder)
+  datalake_upload(successor_orgs, stored_files_folder)
+  datalake_upload(admissions, stored_files_folder)
+  datalake_upload(seft_udal, stored_files_folder)
+  datalake_upload(udal_process_time, stored_files_folder)
+  datalake_upload(api_mapping_table, stored_files_folder)
 }
 
 # //////////////////////////////////////////////////////////////////////////////
@@ -205,14 +204,14 @@ if (developer_mode == FALSE) {
 #
 # //////////////////////////////////////////////////////////////////////////////
 if (developer_mode == TRUE){
-  ods_provider_hierarchies <- datalake_download(cont, "ods_provider_hierarchies", 
-                                              vte_store_folder)
-  ods_sites <- datalake_download(cont, "ods_sites", vte_store_folder)
-  successor_orgs <- datalake_download(cont, "successor_orgs", vte_store_folder)
-  admissions <- datalake_download(cont, "admissions", vte_store_folder)
-  seft_udal <- datalake_download(cont, "seft_udal", vte_store_folder)
-  udal_process_time <- datalake_download(cont, "udal_process_time",
-                                         vte_store_folder)
-  api_mapping_table <- datalake_download(cont, "api_mapping_table",
-                                         vte_store_folder)
+  ods_provider_hierarchies <- datalake_download("ods_provider_hierarchies", 
+                                                stored_files_folder)
+  ods_sites <- datalake_download("ods_sites", stored_files_folder)
+  successor_orgs <- datalake_download("successor_orgs", stored_files_folder)
+  admissions <- datalake_download("admissions", stored_files_folder)
+  seft_udal <- datalake_download("seft_udal", stored_files_folder)
+  udal_process_time <- datalake_download("udal_process_time",
+                                         stored_files_folder)
+  api_mapping_table <- datalake_download("api_mapping_table",
+                                         stored_files_folder)
 }
