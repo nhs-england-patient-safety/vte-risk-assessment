@@ -9,7 +9,7 @@ dl_endp <-
                    token = token)
 cont <- storage_container(dl_endp, "analytics-projects")
 tac_folder <- "PatientSafety/PatientSafety/trust_accounts_consolidation_(TAC)"
-vte_store_folder <- "PatientSafety/PatientSafety/vte/stored_files"
+stored_files_folder <- "PatientSafety/PatientSafety/vte/stored_files"
 
 # UDAL
 if (developer_mode == FALSE) {
