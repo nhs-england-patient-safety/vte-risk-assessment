@@ -134,7 +134,7 @@ latest_file <- function(folder) {
 
 # upload to data lake for ods with date stamp
 datalake_upload_ods <- function(df, folder) {
-  url_name <- past0(folder, "/",
+  url_name <- paste0(folder, "/",
                     gsub("-", "_", as.character(Sys.Date())),".csv")
   r_con <- rawConnection(raw(), "wb")
   write_csv(df, r_con)
