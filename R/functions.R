@@ -132,20 +132,45 @@ latest_file <- function(folder) {
 }
 
 
-# upload to data lake
-datalake_upload <- function(df, folder) {
-  dated_name <- paste0(gsub("-", "_", as.character(Sys.Date())),".csv")
-  
-  temp_file <- tempfile(fileext = ".csv")
-  write.csv(df, temp_file, row.names = FALSE)
-  
+# upload to data lake for ods with date stamp
+datalake_upload_ods <- function(df, folder) {
+  url_name <- past0(folder, "/",
+                    gsub("-", "_", as.character(Sys.Date())),".csv")
+  r_con <- rawConnection(raw(), "wb")
+  write_csv(df, r_con)
+  raw_data <- rawConnectionValue(r_con)
   storage_upload(
     cont,
-    src = temp_file,
-    dest = paste0(folder,"/",dated_name)
+    src = rawConnection(raw_data, "rb"),
+    dest = url_name
   )
 }
 
+# upload to data lake
+datalake_upload <- function(df, folder) {
+  url_name <- paste0(folder, "/",
+                     as.character(substitute(df)),
+                     ".csv")
+  r_con <- rawConnection(raw(), "wb")
+  write_csv(df, r_con)
+  raw_data <- rawConnectionValue(r_con)
+  storage_upload(
+    cont,
+    src = rawConnection(raw_data, "rb"),
+    dest = url_name
+  )
+  close(r_con)
+}
+
+# get latest file from data lake
+datalake_download <- function(file_name, folder) {
+  url_name <- paste0(folder, "/",
+                     as.character(file_name),
+                     ".csv")
+  
+  table <- read_csv(storage_download(cont, url_name, dest = NULL))
+  return(table)
+}
 
 # outlook variable 
 outlook <- get_business_outlook(tenant = "nhs")

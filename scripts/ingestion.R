@@ -104,45 +104,31 @@ if (mode == "publish" | mode == "publish_legacy_mapping") {
 # //////////////////////////////////////////////////////////////////////////////
 
 if (mode == "publish" | mode == "publish_legacy_mapping") {
-  # Uploading UDAL files to sharepoint for quicker access during development
-  map_up <- reslib$get_item("VTE/vte-risk-assessment/mapping-data/")
-  map_up$save_dataframe(ods_provider_hierarchies, 
-                        "ods_provider_hierarchies.csv")
-  map_up$save_dataframe(ods_sites, "ods_sites.csv")
-  map_up$save_dataframe(successor_orgs, "successor_orgs.csv")
-  map_up$save_dataframe(admissions, "admissions.csv")
-  map_up$save_dataframe(seft_udal, "seft_udal.csv")
-  map_up$save_dataframe(udal_process_time, "udal_process_time.csv")
+  # Uploading UDAL files to datalake for quicker access during development
+  datalake_upload(ods_provider_hierarchies, stored_files_folder)
+  datalake_upload(ods_sites, stored_files_folder)
+  datalake_upload(successor_orgs, stored_files_folder)
+  datalake_upload(admissions, stored_files_folder)
+  datalake_upload(seft_udal, stored_files_folder)
+  datalake_upload(udal_process_time, stored_files_folder)
 }
 
 # //////////////////////////////////////////////////////////////////////////////
 #
-#  Ingest UDAL and API files from sharepoint  ----
+#  Ingest UDAL and API files from datalake  ----
 #
 # //////////////////////////////////////////////////////////////////////////////
 
 if (mode == "local") {
-  ods_provider_hierarchies <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/mapping-data/ods_provider_hierarchies.csv",
-    show_col_types = FALSE)
-  ods_sites <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/mapping-data/ods_sites.csv",
-    show_col_types = FALSE)
-  successor_orgs <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/mapping-data/successor_orgs.csv",
-    show_col_types = FALSE)
-  admissions <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/mapping-data/admissions.csv",
-    show_col_types = FALSE)
-  seft_udal <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/mapping-data/seft_udal.csv",
-    show_col_types = FALSE)
-  udal_process_time <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/mapping-data/udal_process_time.csv",
-    show_col_types = FALSE)
-  mapping_table <- reslib$load_dataframe(
-    "VTE/vte-risk-assessment/mapping-data/mapping_table.csv",
-    show_col_types = FALSE)
+  ods_provider_hierarchies <- datalake_download("ods_provider_hierarchies", 
+                                                stored_files_folder)
+  ods_sites <- datalake_download("ods_sites", stored_files_folder)
+  successor_orgs <- datalake_download("successor_orgs", stored_files_folder)
+  admissions <- datalake_download("admissions", stored_files_folder)
+  seft_udal <- datalake_download("seft_udal", stored_files_folder)
+  udal_process_time <- datalake_download("udal_process_time",
+                                         stored_files_folder)
+  mapping_table <- datalake_download("mapping_table", stored_files_folder)
 }
 
 
@@ -164,7 +150,7 @@ trust_accounts_consolidation_table <- latest_file(tac_folder)
 
 # storing copy of ods_provider_hierarchies from UDAL
 if (copy_ods_files == TRUE) {
-  datalake_upload(ods_provider_hierarchies,ods_provider_folder)
+  datalake_upload_ods(ods_provider_hierarchies,ods_provider_folder)
 }
 
 
@@ -215,8 +201,8 @@ if (mode == "publish") {
       api_effective_to = pmin(api_legal_end, api_operational_end, na.rm = TRUE),
     )
   
-  # upload to sharepoint
-  map_up$save_dataframe(mapping_table, "mapping_table.csv")
+  # upload to datalake
+  datalake_upload(mapping_table, stored_files_folder)
 }
 
 # //////////////////////////////////////////////////////////////////////////////
