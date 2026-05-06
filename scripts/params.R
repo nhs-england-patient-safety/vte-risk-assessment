@@ -10,7 +10,7 @@ time_period <- "VTE-Q4-2025-26"
 #   (e.g. Q4 2025/26 using pre‑April 2026 ICB boundaries)
 # local
 #   No UDAL, no API. Uses saved file copies (developer / offline use)
-mode <- "local"
+mode <- "publish"
 
 # Saves a copy of ods_provider_hierarchies files to the datalake.
 # Run this before any mapping changes (e.g. ICB boundary changes).
