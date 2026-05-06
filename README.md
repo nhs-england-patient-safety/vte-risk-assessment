@@ -16,12 +16,12 @@ Data used is accessed via secure NHS England systems and is not part of this rep
 
 This repository is primarily intended for:
 
--   Transparency for users of the published statistics
+-   Transparency for users of the published statistics.
 
--   Internal reuse or adaptation with appropriate data access
+-   Internal reuse or adaptation with appropriate data access.
 
 The code cannot be run without access to secure NHS England systems.
 
 ## Contact
 
-For questions about the statistics and issues with this repository please contact patientsafety.analysis\@nhs.net
+For questions about the statistics and issues with this repository please contact patientsafety.analysis\@nhs.net.
