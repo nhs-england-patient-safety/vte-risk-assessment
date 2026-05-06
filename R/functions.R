@@ -113,15 +113,15 @@ token <- tryCatch(
 outlook <- get_business_outlook(tenant = "nhs")
 
 # upload to data lake
-datalake_upload <- function(container, df, folder) {
+datalake_upload <- function(df, folder) {
   url_name <- paste0(folder, "/",
                      as.character(substitute(df)),
                      ".csv")
   r_con <- rawConnection(raw(), "wb")
-  write.csv(df, r_con, row.names = FALSE)
+  write_csv(df, r_con)
   raw_data <- rawConnectionValue(r_con)
   storage_upload(
-    container,
+    cont,
     src = rawConnection(raw_data, "rb"),
     dest = url_name
   )
@@ -129,12 +129,12 @@ datalake_upload <- function(container, df, folder) {
 }
 
 # get latest file from data lake
-datalake_download <- function(container, df, folder) {
+datalake_download <- function(file_name, folder) {
   url_name <- paste0(folder, "/",
-                     as.character(df),
+                     as.character(file_name),
                      ".csv")
   
-  table <- read_csv(storage_download(container, url_name, dest = NULL))
+  table <- read_csv(storage_download(cont, url_name, dest = NULL))
   return(table)
 }
 
