@@ -618,8 +618,13 @@ icb_table <- icb_percentage |>
 
 # joining to ICB geojson file
 icb_map <- nhs_icb |>
-  mutate(ICB23NM = str_to_upper(ICB23NM)) |>
-  left_join(icb_percentage, join_by(ICB23NM == icb_name))
+  rename(ICBNM = ends_with("NM")) |>
+  mutate(ICBNM = str_to_upper(ICBNM)) |>
+  left_join(
+    icb_percentage,
+    join_by(ICBNM == icb_name)
+  )
+
 
 min_p <- min(60, floor(min(icb_percentage$p) / 10) * 10)
 midpoint <- ((100 - min_p) / 2) + min_p
