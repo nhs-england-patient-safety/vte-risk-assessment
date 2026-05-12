@@ -381,6 +381,8 @@ Please email press enquiries to NHS England Press Office at: [nhsengland.media\@
 
 Your feedback is welcomed on the format, frequency and utility of this document, so that we can provide reports that are of most benefit, Please contact [patientsafety.analysis\@nhs.net](mailto:patientsafety.analysis@nhs.net) with any suggestions.
 
+A public repository of the code used to create this publication is available on `r release_url`.
+
 The analysts with overall responsibility for this report are:
 
 **Joshua Mutio**\
