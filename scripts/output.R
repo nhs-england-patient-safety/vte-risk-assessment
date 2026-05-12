@@ -39,7 +39,7 @@ published_csv <- df_joined |>
     operated_by,
     org_type,
     number_of_vte_assessed_admissions:
-      percentage_of_admitted_patients_risk_assessed_for_vte,
+    percentage_of_admitted_patients_risk_assessed_for_vte,
     operational_standard_met,
     date
   ) |>
