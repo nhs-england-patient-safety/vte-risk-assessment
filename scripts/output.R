@@ -18,11 +18,17 @@ dir.create(file.path(here("output", time_period_folder, "reference")),
 # //////////////////////////////////////////////////////////////////////////////
 
 # Removing and renaming columns, filtering for time period
+# ods_sites and icb_mapping 
+api_icb_ods <- mapping_table |> 
+  select(api_org_code, api_icb_code, api_icb_name,
+         api_operated_by_code, api_operated_by_name) |> 
+  rename_with(~ str_remove(.x, "api_"))
+
+# Removing and renaming columns, filtering for time period
 published_csv <- df_joined |>
   filter(period == time_period) |>
-  left_join(ods_sites, join_by(org_code == Site_Code)) |>
-  left_join(icb_mapping, join_by(org_code == organisation_code)) |>
-  rename(operated_by = Trust_Name) |>
+  left_join(api_icb_ods, join_by(org_code == org_code)) |>
+  rename(operated_by = operated_by_name) |>
   rename(region = parent_name) |>
   mutate("operational_standard_met" = 
            ifelse(percentage_of_admitted_patients_risk_assessed_for_vte >= 0.95, 
