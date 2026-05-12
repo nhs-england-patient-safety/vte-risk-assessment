@@ -16,8 +16,6 @@ dir.create(file.path(here("output", time_period_folder, "reference")),
 #  Preparing and creating csv ----
 #
 # //////////////////////////////////////////////////////////////////////////////
-
-# Removing and renaming columns, filtering for time period
 # ods_sites and icb_mapping 
 api_icb_ods <- mapping_table |> 
   select(api_org_code, api_icb_code, api_icb_name,
