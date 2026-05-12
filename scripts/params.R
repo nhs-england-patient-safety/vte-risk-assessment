@@ -11,6 +11,16 @@ draft_emails_non_submitters <- FALSE
 # Input the date of the report
 time_period <- "VTE-Q2-2025-26"
 
+# release tag of the published code
+release_tag <- "2025-26_Q3_v3"
+
+release_url <- paste0(
+  "[GitHub]",
+  "(https://github.com/nhs-england-patient-safety/vte-risk-assessment/releases/tag/",
+  release_tag,
+  ")"
+  )
+
 # How many quarters to go back for charts
 previous_quarters <- 20
 
