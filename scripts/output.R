@@ -17,36 +17,36 @@ dir.create(file.path(here("output", time_period_folder, "reference")),
 #
 # //////////////////////////////////////////////////////////////////////////////
 # ods_sites and icb_mapping 
-  api_icb_ods <- api_mapping_table |> 
-    select(api_org_code, api_icb_code, api_icb_name,
-           api_operated_by_code, api_operated_by_name) |> 
-    rename_with(~ str_remove(.x, "api_"))
-  
-  # Removing and renaming columns, filtering for time period
-  published_csv <- df_joined |>
-    filter(period == time_period) |>
-    left_join(api_icb_ods, join_by(org_code == org_code)) |>
-    rename(operated_by = operated_by_name) |>
-    rename(region = parent_name) |>
-    mutate("operational_standard_met" = 
-             ifelse(percentage_of_admitted_patients_risk_assessed_for_vte >= 0.95, 
-                    "yes", "no")) |>
-    select(
-      org_code,
-      org_name,
-      icb_name,
-      region,
-      operated_by,
-      org_type,
-      number_of_vte_assessed_admissions:
-        percentage_of_admitted_patients_risk_assessed_for_vte,
-      operational_standard_met,
-      date
-    ) |>
-    arrange(org_code, date) |> 
-    # Round percentage of admitted patients risk assessed to 4 decimal place.
-    mutate(percentage_of_admitted_patients_risk_assessed_for_vte = 
-             round(percentage_of_admitted_patients_risk_assessed_for_vte, 4))
+api_icb_ods <- api_mapping_table |> 
+  select(api_org_code, api_icb_code, api_icb_name,
+         api_operated_by_code, api_operated_by_name) |> 
+  rename_with(~ str_remove(.x, "api_"))
+
+# Removing and renaming columns, filtering for time period
+published_csv <- df_joined |>
+  filter(period == time_period) |>
+  left_join(api_icb_ods, join_by(org_code == org_code)) |>
+  rename(operated_by = operated_by_name) |>
+  rename(region = parent_name) |>
+  mutate("operational_standard_met" = 
+           ifelse(percentage_of_admitted_patients_risk_assessed_for_vte >= 0.95, 
+                  "yes", "no")) |>
+  select(
+    org_code,
+    org_name,
+    icb_name,
+    region,
+    operated_by,
+    org_type,
+    number_of_vte_assessed_admissions:
+      percentage_of_admitted_patients_risk_assessed_for_vte,
+    operational_standard_met,
+    date
+  ) |>
+  arrange(org_code, date) |> 
+  # Round percentage of admitted patients risk assessed to 4 decimal place.
+  mutate(percentage_of_admitted_patients_risk_assessed_for_vte = 
+           round(percentage_of_admitted_patients_risk_assessed_for_vte, 4))
 
 write_csv(published_csv, here("output",time_period_folder,time_period_csv))
 
