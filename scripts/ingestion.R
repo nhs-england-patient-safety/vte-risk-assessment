@@ -49,13 +49,17 @@ if (developer_mode == FALSE) {
   message("retrieving admissions data from UDAL")
   admissions <- 
     tbl(con_udal, I("Reporting_MESH_APC.APCS_Core_Monthly_Snapshot")) |>
-    filter(Der_Activity_Month >= 202404, 
+    filter(Admission_Date >= first_day_of_quarter & 
+             Admission_Date < last_day_of_quarter, 
            Age_At_Start_of_Spell_SUS >= 16,
            Age_At_Start_of_Spell_SUS < 120) |>
-    group_by(Der_Provider_Code,Der_Activity_Month) |> 
+    mutate(
+      admission_month = as.Date(format(Admission_Date, "%Y-%m-01"))
+    ) |> 
+    group_by(Der_Provider_Code,admission_month) |> 
     summarise(total_admissions = n()) |> 
     ungroup() |> 
-    select(Der_Provider_Code, Der_Activity_Month, total_admissions) |>
+    select(Der_Provider_Code, admission_month, total_admissions) |>
     collect() |>
     clean_names()
   
