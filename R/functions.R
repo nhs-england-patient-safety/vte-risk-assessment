@@ -47,6 +47,8 @@ time_period_title <- case_when(
 )
 
 quarter <- as.numeric(substring(time_period, 6, 6))
+quarter_start_month <- c(4, 7, 10, 1)[quarter]
+quarter_end_month <- c(6, 9, 12, 3)[quarter]
 time_period_paragraph <- time_period_title |> 
   str_replace("Quarter", str_to_lower) |> 
   str_replace("quarter [0-9]", str_glue("quarter {quarter} (Q{quarter})"))
@@ -60,7 +62,9 @@ month_2_readable <- as.character(format(make_date(year, month_1_q, 1) +
                                           months(1), "%B %Y"))
 month_3_readable <- as.character(format(make_date(year, month_1_q, 1) + 
                                           months(2), "%B %Y"))
-
+first_day_of_quarter <- make_date(year, quarter_start_month, 1)
+last_day_of_quarter <- make_date(year, quarter_end_month, 1) |> 
+  ceiling_date("month") - days(1)
 
 # figure saving
 save_figure <- function(n, p, w, h) {
