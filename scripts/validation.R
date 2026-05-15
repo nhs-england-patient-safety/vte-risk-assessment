@@ -301,28 +301,12 @@ not_submitted <- sdcs_list |>
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-
-# cleaning der month into actual date ready for joining
-admissions_data <- admissions |>
-  mutate(
-    month = as.numeric(substr(der_activity_month, 5, 6)),
-    year = as.numeric(substr(der_activity_month, 1, 4)),
-    date = lubridate::make_date(
-      year = year,
-      month = month,
-      day = 1
-    )
-  ) |>
-  rename(total_admissions_sus = total_admissions,
-         provider_code = der_provider_code) |>
-  select(date, provider_code, total_admissions_sus)
-
 # highlighting changes between submitted and SUS data
 sus_admissions <- df_joined |>
   select(period, org_code, month, date, total_admissions) |>
   left_join(mapping, join_by(org_code == organisation_code)) |>
   left_join(sdcs_email, join_by(org_code == org_code)) |>
-  left_join(admissions_data, 
+  left_join(admissions, 
             join_by(org_code == provider_code, date == date)) |>
   # calculating difference in admissions
   mutate(sus_change = 100 * (total_admissions_sus - total_admissions) /
