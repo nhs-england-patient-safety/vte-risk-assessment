@@ -53,15 +53,15 @@ if (developer_mode == FALSE) {
              Admission_Date < last_day_of_quarter, 
            Age_At_Start_of_Spell_SUS >= 16,
            Age_At_Start_of_Spell_SUS < 120) |>
-    mutate(
-      admission_month = as.Date(format(Admission_Date, "%Y-%m-01"))
-    ) |> 
-    group_by(Der_Provider_Code,admission_month) |> 
-    summarise(total_admissions = n()) |> 
-    ungroup() |> 
-    select(Der_Provider_Code, admission_month, total_admissions) |>
-    collect() |>
-    clean_names()
+    mutate(date = sql("DATEFROMPARTS(YEAR(Admission_Date), 
+                                 MONTH(Admission_Date), 1)")) |>
+    group_by(Der_Provider_Code,date) |>
+    summarise(total_admissions_sus = n()) |>
+    ungroup() |>
+    select(date,
+           provider_code = Der_Provider_Code, 
+           total_admissions_sus) |>
+    collect()
   
   message("retrieving ods_provider_hierarchies data from UDAL")
   ods_provider_hierarchies <- 
