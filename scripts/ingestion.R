@@ -105,12 +105,12 @@ if (mode == "publish" | mode == "publish_legacy_mapping") {
 
 if (mode == "publish" | mode == "publish_legacy_mapping") {
   # Uploading UDAL files to datalake for quicker access during development
-  datalake_upload(ods_provider_hierarchies, stored_files_folder)
-  datalake_upload(ods_sites, stored_files_folder)
-  datalake_upload(successor_orgs, stored_files_folder)
-  datalake_upload(admissions, stored_files_folder)
-  datalake_upload(seft_udal, stored_files_folder)
-  datalake_upload(udal_process_time, stored_files_folder)
+  datalake_upload(ods_provider_hierarchies, stored_files_folder, "object")
+  datalake_upload(ods_sites, stored_files_folder, "object")
+  datalake_upload(successor_orgs, stored_files_folder, "object")
+  datalake_upload(admissions, stored_files_folder, "object")
+  datalake_upload(seft_udal, stored_files_folder, "object")
+  datalake_upload(udal_process_time, stored_files_folder, "object")
 }
 
 # //////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ trust_accounts_consolidation_table <- latest_file(tac_folder)
 
 # storing copy of ods_provider_hierarchies from UDAL
 if (copy_ods_files == TRUE) {
-  datalake_upload_ods(ods_provider_hierarchies,ods_provider_folder)
+  datalake_upload(ods_provider_hierarchies,ods_provider_folder, "date")
 }
 
 
@@ -202,7 +202,7 @@ if (mode == "publish") {
     )
   
   # upload to datalake
-  datalake_upload(mapping_table, stored_files_folder)
+  datalake_upload(mapping_table, stored_files_folder, "object")
 }
 
 # //////////////////////////////////////////////////////////////////////////////

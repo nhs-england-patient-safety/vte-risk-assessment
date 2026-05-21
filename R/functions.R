@@ -131,26 +131,19 @@ latest_file <- function(folder) {
   return(table)
 }
 
-
-# upload to data lake for ods with date stamp
-datalake_upload_ods <- function(df, folder) {
-  url_name <- paste0(folder, "/",
-                    gsub("-", "_", as.character(Sys.Date())),".csv")
-  r_con <- rawConnection(raw(), "wb")
-  write_csv(df, r_con)
-  raw_data <- rawConnectionValue(r_con)
-  storage_upload(
-    cont,
-    src = rawConnection(raw_data, "rb"),
-    dest = url_name
-  )
-}
-
 # upload to data lake
-datalake_upload <- function(df, folder) {
-  url_name <- paste0(folder, "/",
-                     as.character(substitute(df)),
-                     ".csv")
+datalake_upload <- function(df, folder, type = c("date", "object")) {
+  type <- match.arg(type)
+  
+  # file name
+  name <- switch(
+    type,
+    date = gsub("-", "_", as.character(Sys.Date())),
+    object = as.character(substitute(df))
+  )
+  url_name <- paste0(folder, "/", name, ".csv")
+  
+  # upload 
   r_con <- rawConnection(raw(), "wb")
   write_csv(df, r_con)
   raw_data <- rawConnectionValue(r_con)
@@ -174,22 +167,6 @@ datalake_download <- function(file_name, folder) {
 
 # outlook variable 
 outlook <- get_business_outlook(tenant = "nhs")
-
-# upload to data lake
-datalake_upload <- function(df, folder) {
-  url_name <- paste0(folder, "/",
-                     as.character(substitute(df)),
-                     ".csv")
-  r_con <- rawConnection(raw(), "wb")
-  write_csv(df, r_con)
-  raw_data <- rawConnectionValue(r_con)
-  storage_upload(
-    cont,
-    src = rawConnection(raw_data, "rb"),
-    dest = url_name
-  )
-  close(r_con)
-}
 
 # sharepoint variables
 site_url <- Sys.getenv("sharepoint_url")
