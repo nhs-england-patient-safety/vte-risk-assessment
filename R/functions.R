@@ -191,17 +191,6 @@ datalake_upload <- function(df, folder) {
   close(r_con)
 }
 
-# get latest file from data lake
-datalake_download <- function(file_name, folder) {
-  url_name <- paste0(folder, "/",
-                     as.character(file_name),
-                     ".csv")
-  
-  table <- read_csv(storage_download(cont, url_name, dest = NULL))
-  return(table)
-}
-
-
 # sharepoint variables
 site_url <- Sys.getenv("sharepoint_url")
 site <- get_sharepoint_site(site_url = site_url, tenant = "nhs")
