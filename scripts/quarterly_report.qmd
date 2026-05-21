@@ -18,6 +18,7 @@ editor: visual
 
 ```{r sourcing scripts, include=FALSE}
 source("params.R", local = knitr::knit_global())
+source("time_periods.R", local = knitr::knit_global())
 source("../R/functions.R", local = knitr::knit_global())
 source("connections.R", local = knitr::knit_global())
 source("ingestion.R", local = knitr::knit_global())

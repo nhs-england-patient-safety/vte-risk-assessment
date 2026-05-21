@@ -10,9 +10,10 @@ dl_endp <-
 cont <- storage_container(dl_endp, "analytics-projects")
 tac_folder <- "PatientSafety/PatientSafety/trust_accounts_consolidation_(TAC)"
 stored_files_folder <- "PatientSafety/PatientSafety/vte/stored_files"
+ods_provider_folder <- "PatientSafety/PatientSafety/ods_provider_hierarchies"
 
 # UDAL
-if (developer_mode == FALSE) {
+if (mode == "publish" | mode == "publish_legacy_mapping") {
   con_udal <- dbConnect(
     drv = odbc(),
     driver = "ODBC Driver 18 for SQL Server",

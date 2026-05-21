@@ -17,7 +17,7 @@ dir.create(file.path(here("output", time_period_folder, "reference")),
 #
 # //////////////////////////////////////////////////////////////////////////////
 # ods_sites and icb_mapping 
-api_icb_ods <- api_mapping_table |> 
+api_icb_ods <- mapping_table |> 
   select(api_org_code, api_icb_code, api_icb_name,
          api_operated_by_code, api_operated_by_name) |> 
   rename_with(~ str_remove(.x, "api_"))
@@ -109,13 +109,13 @@ write_csv(ods_provider_hierarchies,
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-upload_file(time_period_csv)
-upload_file(time_period_xlsx)
-upload_ref_file("all_seft_data.csv")
-upload_ref_file("data_quality.csv")
-upload_ref_file("notes.csv")
-upload_ref_file("revisions.csv")
-upload_ref_file("trust_accounts_consolidation_table.csv")
-upload_ref_file("sdcs_list.csv")
-upload_ref_file("ods_provider_hierarchies.csv")
-upload_figures("figures")
+upload_to_sharepoint(time_period_csv)
+upload_to_sharepoint(time_period_xlsx)
+upload_to_sharepoint("all_seft_data.csv", "reference")
+upload_to_sharepoint("data_quality.csv", "reference")
+upload_to_sharepoint("notes.csv", "reference")
+upload_to_sharepoint("revisions.csv", "reference")
+upload_to_sharepoint("trust_accounts_consolidation_table.csv", "reference")
+upload_to_sharepoint("sdcs_list.csv", "reference")
+upload_to_sharepoint("ods_provider_hierarchies.csv", "reference")
+upload_to_sharepoint("figures")
