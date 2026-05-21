@@ -139,7 +139,7 @@ if (mode == "local") {
 # //////////////////////////////////////////////////////////////////////////////
 
 # Trust Accounts Consolidation Table (TAC)
-trust_accounts_consolidation_table <- latest_file(tac_folder)
+trust_accounts_consolidation_table <- datalake_latest_file(tac_folder)
 
 
 # //////////////////////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ if (mode == "publish") {
 if (mode == "publish_legacy_mapping") {
   
   # Provider Hierarchies table from datalake (stored from step above)
-  latest_ods_provider_hierarchies_table <- latest_file(ods_provider_folder)
+  latest_ods_provider_hierarchies_table <- datalake_latest_file(ods_provider_folder)
   
   # ODS sites from UDAL for operated by names
   ods_sites_cleaned <- ods_sites |> clean_names() |> 

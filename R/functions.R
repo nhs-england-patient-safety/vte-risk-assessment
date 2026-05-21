@@ -53,8 +53,8 @@ token <- tryCatch(
     )}
 )
 
-# get latest file from data lake
-latest_file <- function(folder) {
+# get latest file from datalake (that is dated before end of selected quarter)
+datalake_latest_file <- function(folder) {
   latest_file <- list_storage_files(cont, folder, recursive = FALSE, info = "all") |> 
     mutate(
       date_str = str_extract(name, "\\d{4}_\\d{2}_\\d{2}"),
@@ -69,6 +69,16 @@ latest_file <- function(folder) {
   
   table <- read_csv(storage_download(cont, latest_file, dest = NULL)) |> 
     clean_names()
+  return(table)
+}
+
+# download specified file from datalake
+datalake_download <- function(file_name, folder) {
+  url_name <- paste0(folder, "/",
+                     as.character(file_name),
+                     ".csv")
+  
+  table <- read_csv(storage_download(cont, url_name, dest = NULL))
   return(table)
 }
 
@@ -96,17 +106,7 @@ datalake_upload <- function(df, folder, type = c("date", "object")) {
   close(r_con)
 }
 
-# get latest file from data lake
-datalake_download <- function(file_name, folder) {
-  url_name <- paste0(folder, "/",
-                     as.character(file_name),
-                     ".csv")
-  
-  table <- read_csv(storage_download(cont, url_name, dest = NULL))
-  return(table)
-}
-
-# outlook variable 
+# outlook variable for draft emails
 outlook <- get_business_outlook(tenant = "nhs")
 
 # sharepoint variables
