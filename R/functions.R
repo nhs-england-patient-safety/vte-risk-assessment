@@ -114,36 +114,26 @@ site_url <- Sys.getenv("sharepoint_url")
 site <- get_sharepoint_site(site_url = site_url, tenant = "nhs")
 reslib <- site$get_drive("Restricted Library")
 
-# uploading files
-upload_file <- function(file) {
-  vte_outputs <- reslib$get_item("VTE/Outputs/")
-  try(vte_outputs$create_folder(time_period_folder), silent = TRUE)
-  vte_outputs_q <- reslib$get_item(paste0("VTE/Outputs/", time_period_folder))
-  vte_outputs_q$upload(
-    src = here("output",time_period_folder, file),
-    dest = file
-  )
-}
+# uploading files to sharepoint
+upload_to_sharepoint <- function(file, subfolder = NULL) {
+  base_path <- "VTE/Outputs/"
+  root <- reslib$get_item(base_path)
+  try(root$create_folder(time_period_folder), silent = TRUE)
+  
+  if (is.null(subfolder)) {
+    dest_folder <- reslib$get_item(paste0(base_path, time_period_folder))
+    local_path <- here("output", time_period_folder, file)
+  } else {
+    parent <- reslib$get_item(paste0(base_path, time_period_folder))
+    try(parent$create_folder(subfolder), silent = TRUE)
+    dest_folder <- reslib$get_item(paste0(base_path, time_period_folder, "/", 
+                                         subfolder))
+    local_path <- here("output", time_period_folder, subfolder, file)
+  }
 
-# uploading reference files used to support creation of report
-upload_ref_file <- function(file) {
-  vte_ref <- reslib$get_item(paste0("VTE/Outputs/",time_period_folder))
-  try(vte_ref$create_folder("reference"), silent = TRUE)
-  vte_ref_u <- reslib$get_item(paste0("VTE/Outputs/", time_period_folder,"/reference"))
-  vte_ref_u$upload(
-    src = here("output",time_period_folder,"reference", file),
+    dest_folder$upload(
+    src = local_path,
     dest = file
-  )
-}
-
-# uploading figures which are used to insert into wordpress when publishing
-upload_figures <- function(figure) {
-  vte_figures<- reslib$get_item("VTE/Outputs/")
-  try(vte_figures$create_folder(time_period_folder), silent = TRUE)
-  vte_figures_u <- reslib$get_item(paste0("VTE/Outputs/", time_period_folder))
-  vte_figures_u$upload(
-    src  = here("output", time_period_folder, figure),
-    dest = figure
   )
 }
 
