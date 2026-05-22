@@ -1,5 +1,6 @@
 library(quarto)
 source("scripts/params.R")
+source("scripts/time_periods.R")
 source("R/functions.R")
 
 # creating html
