@@ -24,7 +24,7 @@ draft_emails_sus <- FALSE
 draft_emails_non_submitters <- FALSE
 
 # release tag of the published code
-release_tag <- "2025-26_Q3_v3"
+release_tag <- "2025-26_Q4_v1"
 
 release_url <- paste0(
   "[GitHub]",
@@ -35,19 +35,6 @@ release_url <- paste0(
 
 # How many quarters to go back for charts
 previous_quarters <- 20
-
-# Readable time periods used in run.R outside of quarto
-time_period_html <- paste0(
-  "VTE-Risk-Assessment-",
-  (substring(time_period, 8, 14)),
-  "-Quarter-", (substring(time_period, 6, 6)),
-  ".html"
-)
-time_period_folder <- paste0(
-  substring(time_period, 8, 14),
-  " Q",
-  substring(time_period, 6, 6)
-)
 
 # error handling
 if (copy_ods_files && mode != "publish") {

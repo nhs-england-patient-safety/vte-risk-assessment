@@ -14,6 +14,17 @@ time_period_xlsx <- paste0("VTE-Risk-Assessment-",
 time_period_fig <- paste0(substring(time_period, 10, 11), "_", 
                           substring(time_period, 13, 14), "_q", 
                           substring(time_period, 6, 6))
+time_period_html <- paste0(
+  "VTE-Risk-Assessment-",
+  (substring(time_period, 8, 14)),
+  "-Quarter-", (substring(time_period, 6, 6)),
+  ".html"
+)
+time_period_folder <- paste0(
+  substring(time_period, 8, 14),
+  " Q",
+  substring(time_period, 6, 6)
+)
 
 time_period_title <- case_when(
   substring(time_period, 6, 6) == 
