@@ -1,5 +1,6 @@
 library(quarto)
 source("scripts/params.R")
+source("scripts/time_periods.R")
 source("R/functions.R")
 
 # creating html
@@ -15,4 +16,4 @@ fs::file_move(here("scripts",time_period_html),
 )
 
 # uploading html
-upload_file(time_period_html)
+upload_to_sharepoint(time_period_html)

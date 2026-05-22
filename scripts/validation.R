@@ -20,7 +20,7 @@ sdcs_list <- reslib$load_dataframe(
   clean_names() |>
   left_join(mapping_codes, join_by(org_code == organisation_code)) |>
   left_join(mapping_tac, join_by(org_code == provider_code)) |>
-  left_join(api_mapping_table, join_by(org_code == api_org_code)) |> 
+  left_join(mapping_table, join_by(org_code == api_org_code)) |> 
   select(
     org_code, 
     organisation_name, 
@@ -107,7 +107,7 @@ udal_vs_api <- ods_provider_hierarchies |>
   left_join(ods_sites, join_by(organisation_code == Site_Code)) |>
   left_join(successor_orgs |> filter(Is_Latest == 1), 
             join_by(organisation_code == Organisation_Code)) |>
-  left_join(api_mapping_table, join_by(organisation_code == api_org_code)) |> 
+  left_join(mapping_table, join_by(organisation_code == api_org_code)) |> 
   clean_names() |> 
   filter(!is.na(api_org_name)) |> 
   mutate(
@@ -182,7 +182,7 @@ inactive_and_successor_orgs <- reslib$load_dataframe(
   clean_names() |>
   select(org_code, organisation_name) |>
   distinct() |>
-  left_join(api_mapping_table, join_by(org_code == api_org_code)) |>
+  left_join(mapping_table, join_by(org_code == api_org_code)) |>
   select(
     org_code,
     api_org_name,

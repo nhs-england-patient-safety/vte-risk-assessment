@@ -33,14 +33,13 @@ seft_cleansed <- seft_udal |>
   )
 
 # api mapping table
-mapping <- api_mapping_table |>
+mapping <- mapping_table |>
   select(organisation_code = api_org_code, 
          organisation_name = api_org_name, 
          org_type)
 
 # tac table
 mapping_tac <- trust_accounts_consolidation_table |>
-  clean_names() |>
   select(provider_code = org_nhs_code, provider_name = org_name, sector)
 
 # pull out submitters with 0 admissions
@@ -137,7 +136,7 @@ rev_up$save_dataframe(revisions_returns_percentages, "revisions.csv")
 # //////////////////////////////////////////////////////////////////////////////
 
 # get ICB names 
-icb_mapping <- api_mapping_table |>
+icb_mapping <- mapping_table |>
   select(organisation_code = api_org_code, 
          icb_code = api_icb_code, 
          icb_name = api_icb_name)

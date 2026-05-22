@@ -1,4 +1,3 @@
-library(tidyverse)
 library(Microsoft365R)
 library(here)
 library(httr2)
@@ -6,65 +5,6 @@ library(AzureStor)
 library(AzureAuth)
 library(AzureKeyVault)
 library(httpuv)
-
-#  Readable time periods
-time_period_readable <- paste0(substring(time_period, 5, 6), " ", 
-                               substring(time_period, 8, 11), "/", 
-                               substring(time_period, 13, 14))
-time_period_csv <- paste0("VTE-Risk-Assessment-", 
-                          (substring(time_period, 8, 14)), 
-                          "-Quarter-", (substring(time_period, 6, 6)), ".csv")
-time_period_xlsx <- paste0("VTE-Risk-Assessment-", 
-                           (substring(time_period, 8, 14)), 
-                           "-Quarter-", (substring(time_period, 6, 6)), 
-                           "-validation.xlsx")
-time_period_fig <- paste0(substring(time_period, 10, 11), "_", 
-                          substring(time_period, 13, 14), "_q", 
-                          substring(time_period, 6, 6))
-
-time_period_title <- case_when(
-  substring(time_period, 6, 6) == 
-    1 ~ paste0("Quarter ", substring(time_period, 6, 6), " ", 
-               substring(time_period, 8, 11), "/", 
-               substring(time_period, 13, 14), 
-               " (April to June ", substring(time_period, 8, 11), ")"),
-  substring(time_period, 6, 6) == 
-    2 ~ paste0("Quarter ", substring(time_period, 6, 6), " ", 
-               substring(time_period, 8, 11), "/", 
-               substring(time_period, 13, 14), " (July to September ", 
-               substring(time_period, 8, 11), ")"),
-  substring(time_period, 6, 6) == 
-    3 ~ paste0("Quarter ", substring(time_period, 6, 6), " ", 
-               substring(time_period, 8, 11), "/", 
-               substring(time_period, 13, 14), " (October to December ", 
-               substring(time_period, 8, 11), ")"),
-  substring(time_period, 6, 6) == 
-    4 ~ paste0("Quarter ", substring(time_period, 6, 6), " ", 
-               substring(time_period, 8, 11), "/", 
-               substring(time_period, 13, 14), " (January to March ", 
-               substring(time_period, 8, 9), 
-               substring(time_period, 13, 14), ")")
-)
-
-quarter <- as.numeric(substring(time_period, 6, 6))
-quarter_start_month <- c(4, 7, 10, 1)[quarter]
-quarter_end_month <- c(6, 9, 12, 3)[quarter]
-time_period_paragraph <- time_period_title |> 
-  str_replace("Quarter", str_to_lower) |> 
-  str_replace("quarter [0-9]", str_glue("quarter {quarter} (Q{quarter})"))
-
-year <- ifelse(quarter == 4, as.numeric(substring(time_period, 8, 11)) + 1,
-               as.numeric(substring(time_period, 8, 11))
-)
-month_1_q <- ifelse(quarter == 4, 1, 3 * quarter + 1)
-month_1_readable <- as.character(format(make_date(year, month_1_q, 1), "%B %Y"))
-month_2_readable <- as.character(format(make_date(year, month_1_q, 1) + 
-                                          months(1), "%B %Y"))
-month_3_readable <- as.character(format(make_date(year, month_1_q, 1) + 
-                                          months(2), "%B %Y"))
-first_day_of_quarter <- make_date(year, quarter_start_month, 1)
-last_day_of_quarter <- make_date(year, quarter_end_month, 1) |> 
-  ceiling_date("month") - days(1)
 
 # figure saving
 save_figure <- function(n, p, w, h) {
@@ -113,14 +53,48 @@ token <- tryCatch(
     )}
 )
 
-# outlook variable 
-outlook <- get_business_outlook(tenant = "nhs")
+# get latest file from datalake (that is dated before end of selected quarter)
+datalake_latest_file <- function(folder) {
+  latest_file <- list_storage_files(cont, folder, recursive = FALSE, info = "all") |> 
+    mutate(
+      date_str = str_extract(name, "\\d{4}_\\d{2}_\\d{2}"),
+      file_date = ymd(str_replace_all(date_str, "_", "-"))
+    ) |>
+    filter(!is.na(file_date)) |>
+    arrange(desc(file_date)) |>
+    # filter only for files created before end of selected quarter
+    filter(file_date <= last_day_of_quarter) |> 
+    slice(1) |> 
+    pull(name)
+  
+  table <- read_csv(storage_download(cont, latest_file, dest = NULL)) |> 
+    clean_names()
+  return(table)
+}
+
+# download specified file from datalake
+datalake_download <- function(file_name, folder) {
+  url_name <- paste0(folder, "/",
+                     as.character(file_name),
+                     ".csv")
+  
+  table <- read_csv(storage_download(cont, url_name, dest = NULL))
+  return(table)
+}
 
 # upload to data lake
-datalake_upload <- function(df, folder) {
-  url_name <- paste0(folder, "/",
-                     as.character(substitute(df)),
-                     ".csv")
+datalake_upload <- function(df, folder, type = c("date", "object")) {
+  type <- match.arg(type)
+  
+  # file name
+  name <- switch(
+    type,
+    date = gsub("-", "_", as.character(Sys.Date())),
+    object = as.character(substitute(df))
+  )
+  url_name <- paste0(folder, "/", name, ".csv")
+  
+  # upload 
   r_con <- rawConnection(raw(), "wb")
   write_csv(df, r_con)
   raw_data <- rawConnectionValue(r_con)
@@ -132,52 +106,34 @@ datalake_upload <- function(df, folder) {
   close(r_con)
 }
 
-# get latest file from data lake
-datalake_download <- function(file_name, folder) {
-  url_name <- paste0(folder, "/",
-                     as.character(file_name),
-                     ".csv")
-  
-  table <- read_csv(storage_download(cont, url_name, dest = NULL))
-  return(table)
-}
-
+# outlook variable for draft emails
+outlook <- get_business_outlook(tenant = "nhs")
 
 # sharepoint variables
 site_url <- Sys.getenv("sharepoint_url")
 site <- get_sharepoint_site(site_url = site_url, tenant = "nhs")
 reslib <- site$get_drive("Restricted Library")
 
-# uploading files
-upload_file <- function(file) {
-  vte_outputs <- reslib$get_item("VTE/Outputs/")
-  try(vte_outputs$create_folder(time_period_folder), silent = TRUE)
-  vte_outputs_q <- reslib$get_item(paste0("VTE/Outputs/", time_period_folder))
-  vte_outputs_q$upload(
-    src = here("output",time_period_folder, file),
-    dest = file
-  )
-}
+# uploading files to sharepoint
+upload_to_sharepoint <- function(file, subfolder = NULL) {
+  base_path <- "VTE/Outputs/"
+  root <- reslib$get_item(base_path)
+  try(root$create_folder(time_period_folder), silent = TRUE)
+  
+  if (is.null(subfolder)) {
+    dest_folder <- reslib$get_item(paste0(base_path, time_period_folder))
+    local_path <- here("output", time_period_folder, file)
+  } else {
+    parent <- reslib$get_item(paste0(base_path, time_period_folder))
+    try(parent$create_folder(subfolder), silent = TRUE)
+    dest_folder <- reslib$get_item(paste0(base_path, time_period_folder, "/", 
+                                         subfolder))
+    local_path <- here("output", time_period_folder, subfolder, file)
+  }
 
-# uploading reference files used to support creation of report
-upload_ref_file <- function(file) {
-  vte_ref <- reslib$get_item(paste0("VTE/Outputs/",time_period_folder))
-  try(vte_ref$create_folder("reference"), silent = TRUE)
-  vte_ref_u <- reslib$get_item(paste0("VTE/Outputs/", time_period_folder,"/reference"))
-  vte_ref_u$upload(
-    src = here("output",time_period_folder,"reference", file),
+    dest_folder$upload(
+    src = local_path,
     dest = file
-  )
-}
-
-# uploading figures which are used to insert into wordpress when publishing
-upload_figures <- function(figure) {
-  vte_figures<- reslib$get_item("VTE/Outputs/")
-  try(vte_figures$create_folder(time_period_folder), silent = TRUE)
-  vte_figures_u <- reslib$get_item(paste0("VTE/Outputs/", time_period_folder))
-  vte_figures_u$upload(
-    src  = here("output", time_period_folder, figure),
-    dest = figure
   )
 }
 
