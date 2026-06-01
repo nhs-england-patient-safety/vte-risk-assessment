@@ -18,6 +18,7 @@ editor: visual
 
 ```{r sourcing scripts, include=FALSE}
 source("params.R", local = knitr::knit_global())
+source("time_periods.R", local = knitr::knit_global())
 source("../R/functions.R", local = knitr::knit_global())
 source("connections.R", local = knitr::knit_global())
 source("ingestion.R", local = knitr::knit_global())
@@ -380,6 +381,8 @@ Guidance on the data collection is given in the 2025/26 NHS Standard Contract an
 Please email press enquiries to NHS England Press Office at: [nhsengland.media\@nhs.net](mailto:nhsengland.media@nhs.net) or call 0113 825 0958.
 
 Your feedback is welcomed on the format, frequency and utility of this document, so that we can provide reports that are of most benefit, Please contact [patientsafety.analysis\@nhs.net](mailto:patientsafety.analysis@nhs.net) with any suggestions.
+
+A public repository of the code used to create this publication is available on `r release_url`.
 
 The analysts with overall responsibility for this report are:
 
