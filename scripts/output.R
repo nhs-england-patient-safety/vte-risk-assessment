@@ -107,6 +107,7 @@ write_csv(ods_provider_hierarchies,
 #
 # //////////////////////////////////////////////////////////////////////////////
 
+
 upload_to_sharepoint(time_period_csv)
 upload_to_sharepoint(time_period_xlsx)
 upload_to_sharepoint("all_seft_data.csv", "reference")
