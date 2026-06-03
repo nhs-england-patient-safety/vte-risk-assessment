@@ -493,7 +493,7 @@ if (draft_emails_non_submitters == TRUE) {
 # Summarise all three months in the quarter and highlight differences
 flags <- df_joined |> 
   filter(org_code != "X26") |> 
-  group_by(period,org_code, org_type, org_name, fy, quarter) |> 
+  group_by(period,org_code, org_name, fy, quarter) |> 
   summarise(vte_admissions = sum(number_of_vte_assessed_admissions, na.rm = TRUE),
             total_admissions = sum(total_admissions, na.rm = TRUE),
             percentage = vte_admissions/total_admissions,
@@ -507,37 +507,43 @@ flags <- df_joined |>
                                       s_percent_change(vte_admissions,
                                                        lag(vte_admissions)),
                                       NA),
-         abs_vte_admissions_percent_change = abs(vte_admissions_percent_change),
          total_admissions_percent_change = if_else(!is.na(lag(total_admissions)),
                                                  s_percent_change(total_admissions,
                                                                   lag(total_admissions)),
                                                  NA),
-         abs_total_admissions_percent_change = abs(total_admissions_percent_change),
          percentage_percent_change = if_else(!is.na(lag(percentage)),
                                                  s_percent_change(percentage,
                                                                   lag(percentage)),
-                                                 NA),
-         abs_percentage_percent_change = abs(percentage_percent_change)) |> 
+                                                 NA)) |> 
   ungroup() |> 
   select(period:quarter,
          vte_admissions_prev_q,
          vte_admissions,
          vte_admissions_percent_change,
-         abs_vte_admissions_percent_change,
          total_admissions_prev_q,
          total_admissions,
          total_admissions_percent_change,
-         abs_total_admissions_percent_change,
          percentage_prev_q,
          percentage,
-         percentage_percent_change,
-         abs_percentage_percent_change) |> 
-  left_join(sdcs_email, join_by(org_code == org_code)) |> 
-  relocate(email, .after = org_name)
+         percentage_percent_change)
 
-# Changes between current and previous quarter
-flags_prev_quarter_comparison <- flags |> 
-  filter(period == time_period) 
+# vte assessed changes between current and previous quarter
+flags_vte_assessed <- flags |> 
+  filter(period == time_period) |> 
+  mutate(vte_admissions_percent_change = abs(vte_admissions_percent_change)) |> 
+  arrange(desc(vte_admissions_percent_change))
+
+# total admissions changes between current and previous quarter
+flags_total_admissions <- flags |> 
+  filter(period == time_period) |> 
+  mutate(total_admissions_percent_change = abs(total_admissions_percent_change)) |> 
+  arrange(desc(total_admissions_percent_change))
+
+# risk assessed percentage changes between current and previous quarter
+flags_risk_assessed <- flags |> 
+  filter(period == time_period) |> 
+  mutate(percentage_percent_change = abs(percentage_percent_change)) |> 
+  arrange(desc(percentage_percent_change))
 
 # No VTE risk assessed admissions in at least one month 
 zero_vte_admissions <- df_joined |> 
