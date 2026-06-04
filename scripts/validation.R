@@ -52,25 +52,6 @@ current_notes <- notes |>
   select(organisation_code, notes) |>
   distinct()
 
-# pivot months so we can have one row per org for the output spreadsheet
-pivot_months <- df_joined |>
-  filter(period == time_period) |>
-  select(
-    org_code,
-    number_of_vte_assessed_admissions,
-    total_admissions,
-    percentage_of_admitted_patients_risk_assessed_for_vte,
-    month
-  ) |>
-  pivot_wider(
-    names_from = month,
-    values_from = c(
-      number_of_vte_assessed_admissions,
-      total_admissions,
-      percentage_of_admitted_patients_risk_assessed_for_vte
-    )
-  )
-
 # excluded data (taken from our manual list in sharepoint)
 excluded <- data_quality_input |>
   filter(period == time_period, excluded_data == "excluded") |>
@@ -218,15 +199,15 @@ org_name_updates_required <- reslib$load_dataframe(
 
 
 # check for NAs / nulls
-validation_na <- df_joined |>
+validation_na <- df_mapped |>
   filter(if_any(everything(), is.na))
 
 # check for non assigned org types
-validation_join <- df_joined |>
+validation_join <- df_mapped |>
   filter(is.na(org_type))
 
-# number of denomindator >1
-num_over_den <- df_joined |>
+# number of denominator >1
+num_over_den <- df_mapped |>
   filter(period == time_period) |>
   mutate(num_over_den_flag = if_else(number_of_vte_assessed_admissions / 
                                        total_admissions > 1, "TRUE", NA)) |>
@@ -240,7 +221,7 @@ num_over_den <- df_joined |>
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-submitted_in_period <- df_joined |>
+submitted_in_period <- df_mapped |>
   filter(period == time_period) |>
   select(org_code) |>
   distinct()
@@ -302,7 +283,7 @@ not_submitted <- sdcs_list |>
 # //////////////////////////////////////////////////////////////////////////////
 
 # highlighting changes between submitted and SUS data
-sus_admissions <- df_joined |>
+sus_admissions <- df_mapped |>
   select(period, org_code, month, date, total_admissions) |>
   left_join(mapping, join_by(org_code == organisation_code)) |>
   left_join(sdcs_email, join_by(org_code == org_code)) |>
@@ -491,7 +472,7 @@ if (draft_emails_non_submitters == TRUE) {
 # //////////////////////////////////////////////////////////////////////////////
 
 # Summarise all three months in the quarter and highlight differences
-flags <- df_joined |> 
+flags <- df_mapped |> 
   filter(org_code != "X26") |> 
   group_by(period,org_code, org_name, org_type, fy, quarter) |> 
   summarise(vte_admissions = sum(number_of_vte_assessed_admissions, na.rm = TRUE),
@@ -540,7 +521,7 @@ flags_prev_quarter_comparison <- flags |>
   filter(period == time_period) 
 
 # No VTE risk assessed admissions in at least one month 
-zero_vte_admissions <- df_joined |> 
+zero_vte_admissions <- df_mapped |> 
   filter(period == time_period,
          number_of_vte_assessed_admissions == 0) |> 
   select(c(org_code, org_name, number_of_vte_assessed_admissions, 
