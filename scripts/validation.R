@@ -518,7 +518,50 @@ flags <- df_mapped |>
 
 # vte assessed changes between current and previous quarter
 flags_prev_quarter_comparison <- flags |> 
-  filter(period == time_period) 
+  filter(period == time_period) |> 
+  mutate(
+    vte_admissions_bullet = case_when(
+    abs_vte_admissions_percent_change > 50 ~ paste0(
+      "-   Significant change in VTE risk assessed admissions from ",
+      vte_admissions_prev_q, " in ", prev_q_time_period_readable, " to ",
+      vte_admissions, " in ", time_period_readable,".\n"
+    ),
+    TRUE ~ ""
+  ),
+  total_admissions_bullet = case_when(
+    abs_total_admissions_percent_change > 50 ~ paste0(
+      "-   Significant change in total admissions from ",
+      total_admissions_prev_q, " in ", prev_q_time_period_readable, " to ",
+      total_admissions, " in ", time_period_readable,".\n"
+    ),
+    TRUE ~ ""
+  ),
+  percentage_bullet = case_when(
+    abs_percentage_percent_change > 10 ~ paste0(
+      "-   Significant change in percentage of admitted patients risk assessed for VTE from ",
+      round(percentage_prev_q * 100, 1), "% in ", prev_q_time_period_readable, " to ",
+      round(percentage * 100, 1), "% in ", time_period_readable,".\n"
+    ),
+    TRUE ~ ""
+  ),
+  export_email = case_when(vte_admissions_bullet != "" | 
+                             total_admissions_bullet != "" |
+                             percentage_bullet != "" ~
+    paste0(
+      "Dear colleague,\n\n",
+      "For the VTE risk assessment collection for ",
+      org_name, " (", org_code, ") for ", time_period_readable, 
+      " we have identified the following variations \n\n",
+      vte_admissions_bullet,
+      total_admissions_bullet,
+      percentage_bullet,"\n",
+      "This may be as a result of data changes or could be a data quality issue. We would be grateful if you could review your submissions and confirm their accuracy. If any discrepancies are identified please let us know so we can discuss potential resubmission.\n\n",
+      "Thank you,\n",
+      "Patient safety team"
+    ),
+    TRUE ~ ""
+  )
+  )
 
 # No VTE risk assessed admissions in at least one month 
 zero_vte_admissions <- df_mapped |> 
