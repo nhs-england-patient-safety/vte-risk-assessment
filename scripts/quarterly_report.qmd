@@ -60,7 +60,7 @@ if (revisions_notes != "") {
 
 Healthcare associated venous thromboembolism (VTE), commonly known as blood clots, is a significant international patient safety issue. The first step in preventing death and disability from VTE is to identify those at risk so that preventative treatments (prophylaxis) can be given. This data collection quantifies the numbers of hospital admissions (aged 16 and over at the time of admission) who are being risk assessed for VTE to identify those who should be given appropriate prophylaxis based on guidance from the [National Institute for Health and Care Excellence (NICE)](https://www.nice.org.uk/guidance/conditions-and-diseases/cardiovascular-conditions/embolism-and-thrombosis). Such measures have the potential to save many lives each year.
 
-This data collection is intended to embed VTE risk assessment across the NHS and will be critical in evaluating the impact of the National VTE Prevention Programme on improving health outcomes for patients. The VTE risk assessment is a former national CQUIN indicator and is a National Quality Requirement in the [NHS Standard Contract for 2025/26](https://www.england.nhs.uk/publication/nhs-standard-contract-2025-26-technical-guidance/). It sets an operational standard of 95% of patients aged 16 and over being risk assessed for VTE on admission each month. Prior to April 2019 the operational standard related to adult patients aged 18 and over.
+This data collection is intended to embed VTE risk assessment across the NHS and will be critical in evaluating the impact of the National VTE Prevention Programme on improving health outcomes for patients. The VTE risk assessment is a former national CQUIN indicator and is a National Quality Requirement in the [NHS Standard Contract](https://www.england.nhs.uk/nhs-standard-contract/). It sets an operational standard of 95% of patients aged 16 and over being risk assessed for VTE on admission each month. Prior to April 2019 the operational standard related to adult patients aged 18 and over.
 
 The data collection asks for the following information:
 
@@ -387,7 +387,7 @@ Data are submitted and published according to the timings below:
 
 ## Guidance
 
-Guidance on the data collection is given in the 2025/26 NHS Standard Contract and can be found at: <https://www.england.nhs.uk/publication/nhs-standard-contract-2025-26-technical-guidance/>
+Guidance on the data collection is given in the NHS Standard Contract and can be found at: <https://www.england.nhs.uk/nhs-standard-contract/>
 
 ## Additional information
 
