@@ -76,6 +76,19 @@ For the purposes of this collection, risk assessment should be completed on admi
 
 This data collection is a census of all patients – it is not appropriate to use sampling methodologies to produce estimates.
 
+## Response rate
+
+Table 1 below summarises the number and proportion of valid submissions from NHS acute care providers. Invalid submissions are excluded from the data and are detailed in the data quality section. Children's hospitals listed in the data quality section are excluded from the count of NHS acute care providers. The number of NHS acute care providers may vary between reporting quarters due to organisational changes.
+
+**Table 1: Number of NHS acute care providers, valid submissions, invalid submissions, non-submissions and response rate by reporting quarter**
+
+```{r table vte response rate, fig.width=8.2}
+#| echo: false 
+kable(response_rate, align ="lrrrrr")
+```
+
+<br>
+
 ## Download data
 
 - [CSV link]{.underline}
@@ -111,7 +124,7 @@ vte_by_month_all_providers
 
 <br>
 
-**Table 1: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by month (`r time_period_readable`)**
+**Table 2: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by month (`r time_period_readable`)**
 
 ```{r table percentage England}
 #| echo: false
@@ -130,7 +143,7 @@ historical_vte_by_month
 
 <br>
 
-**Table 2: The 5 NHS acute care providers with the highest percentage of admitted patients being risk assessed (`r time_period_readable`)**
+**Table 3: The 5 NHS acute care providers with the highest percentage of admitted patients being risk assessed (`r time_period_readable`)**
 
 ```{r top 5 NHS acute providers}
 #| echo: false
@@ -154,7 +167,7 @@ vte_by_month_by_org_type
 
 <br>
 
-**Table 3: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by organisation type by month (`r time_period_readable`)**
+**Table 4: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by organisation type by month (`r time_period_readable`)**
 
 ```{r percentage by org type}
 #| echo: false
@@ -181,7 +194,7 @@ vte_by_region
 
 <br>
 
-**Table 4: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region (`r time_period_readable`)**
+**Table 5: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region (`r time_period_readable`)**
 
 ```{r}
 #| echo: false
@@ -204,7 +217,7 @@ vte_by_region_by_org_type
 
 <br>
 
-**Table 5: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region and organisation type (`r time_period_readable`)**
+**Table 6: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by region and organisation type (`r time_period_readable`)**
 
 ```{r}
 #| echo: false
@@ -230,7 +243,7 @@ icb_map_plot
 
 <br>
 
-**Table 6: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by integrated care board (ICB) (`r time_period_readable`)**
+**Table 7: Percentage of hospital admissions (aged 16 and over at the time of admission) risk assessed for VTE in England by integrated care board (ICB) (`r time_period_readable`)**
 
 ```{r}
 #| echo: false
@@ -254,7 +267,7 @@ admissions_percentage_funnel
 
 <br>
 
-**Table 7: The providers that fall below the 99.8% overdispersed lower limit in quarter (`r time_period_readable`)**
+**Table 8: The providers that fall below the 99.8% overdispersed lower limit in quarter (`r time_period_readable`)**
 
 ```{r lower providers below lower limit}
 #| echo: false
