@@ -161,8 +161,12 @@ geospatial_mapping <- df_joined |>
 # Creating an ordered table of each collection we have by quarter
 collections_quarter <- df_joined |>
   group_by(period) |>
-  mutate(min_date = min(date), max_date = max(date)) |>
-  select(period, min_date, max_date) |>
+  mutate(min_date = min(date), 
+         max_date = max(date),
+         time_period_readable = paste0(substring(period, 5, 6), " ", 
+                               substring(period, 8, 11), "/", 
+                               substring(period, 13, 14))) |>
+  select(period, min_date, max_date,time_period_readable) |>
   arrange(max_date) |>
   distinct() |>
   rowid_to_column("index")
@@ -171,7 +175,15 @@ collections_quarter <- df_joined |>
 time_period_index_quarter <- 
   collections_quarter$index[collections_quarter$period == time_period]
 
-# index value of previous time period
+# index value of previous time period for QA emails
+previous_period_index_qa <- time_period_index_quarter -  1
+
+# previous quarter time period readable for QA emails
+prev_q_time_period_readable <- 
+  collections_quarter$time_period_readable[collections_quarter$index ==
+                                             previous_period_index_qa]
+
+# index value of previous time period for time series chart
 previous_period_index_quarter <- 
   case_when(time_period_index_quarter - previous_quarters < 1 ~ 1,
   .default = time_period_index_quarter - previous_quarters
