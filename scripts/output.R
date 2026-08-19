@@ -62,7 +62,7 @@ names <- list(
   "excluded_data" = excluded,
   "sus_admissions" = sus_admissions,
   "no_sus_admissions" = no_sus_admissions,
-  "flags_all_years" = flags,
+  "flags_all_years" = flags_all_years,
   "flags_prev_quarter_comparison" = flags_prev_quarter_comparison,
   "zero_vte_admissions" = zero_vte_admissions,
   "org_name_updates" = org_name_updates_required,
