@@ -49,7 +49,7 @@ if (mode == "publish" | mode == "publish_legacy_mapping") {
   message("retrieving admissions data from UDAL")
   admissions <- 
     tbl(con_udal, I("Reporting_MESH_APC.APCS_Core_Monthly_Snapshot")) |>
-    filter(Admission_Date >= first_day_of_quarter & 
+    filter(Admission_Date >= "2017-10-01" & 
              Admission_Date < last_day_of_quarter, 
            Age_At_Start_of_Spell_SUS >= 16,
            Age_At_Start_of_Spell_SUS < 120) |>
@@ -61,7 +61,9 @@ if (mode == "publish" | mode == "publish_legacy_mapping") {
     select(date,
            provider_code = Der_Provider_Code, 
            total_admissions_sus) |>
-    collect()
+    collect() |> 
+    mutate(total_admissions_sus = as.numeric(total_admissions_sus))
+  
   
   message("retrieving ods_provider_hierarchies data from UDAL")
   ods_provider_hierarchies <- 
