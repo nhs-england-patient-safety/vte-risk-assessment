@@ -425,48 +425,6 @@ acute_trusts_missing_from_ods <- ods_provider_hierarchies |>
 
 # //////////////////////////////////////////////////////////////////////////////
 #
-##  Automated sus and non_submitters emails
-#
-# //////////////////////////////////////////////////////////////////////////////
-
-if (draft_emails_sus == TRUE) {
-  sus_email_drafts <- sus_admissions |> 
-    filter(abs_sus_total_change > 100) |> 
-    select(org_code, organisation_name, email, export_email) |> 
-    rowwise() |>
-    mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
-           drafts = list(
-             outlook$create_email(to = email_address,
-                                  subject = paste(time_period_readable,
-                                                  "VTE Submissions Query -",
-                                                  organisation_name,
-                                                  org_code),
-                                  body = paste(export_email))),
-           drafts = list(drafts$update(
-             from = list(emailAddress = list(
-               address = "patientsafety.analysis@nhs.net")))))
-}
-
-
-if (draft_emails_non_submitters == TRUE) {
-  non_submitters_email_drafts <- not_submitted |> 
-    select(org_code, organisation_name, email, export_email) |> 
-    rowwise() |>
-    mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
-           drafts = list(
-             outlook$create_email(to = email_address,
-                                  subject = paste(time_period_readable,
-                                                  "VTE Submissions Query -",
-                                                  organisation_name,
-                                                  org_code),
-                                  body = paste(export_email))),
-           drafts = list(drafts$update(
-             from = list(emailAddress = list(
-               address = "patientsafety.analysis@nhs.net")))))
-}
-
-# //////////////////////////////////////////////////////////////////////////////
-#
 ##  Flagging DQ issues across quarters ----
 #
 # //////////////////////////////////////////////////////////////////////////////
@@ -474,15 +432,19 @@ if (draft_emails_non_submitters == TRUE) {
 # Summarise all three months in the quarter and highlight differences
 flags <- df_mapped |> 
   filter(org_code != "X26") |> 
+  left_join(admissions, 
+            join_by(org_code == provider_code, date == date)) |>
   group_by(period,org_code, org_name, org_type, fy, quarter) |> 
   summarise(vte_admissions = sum(number_of_vte_assessed_admissions, na.rm = TRUE),
             total_admissions = sum(total_admissions, na.rm = TRUE),
+            total_admissions_sus = sum(total_admissions_sus, na.rm = TRUE),
             percentage = vte_admissions/total_admissions,
             .groups = "drop") |> 
   group_by(org_code) |>
   arrange(org_code, fy, quarter, .by_group = TRUE) |> 
   mutate(vte_admissions_prev_q = lag(vte_admissions),
          total_admissions_prev_q = lag(total_admissions),
+         total_admissions_sus_prev_q = lag(total_admissions_sus),
          percentage_prev_q = lag(percentage),
          vte_admissions_percent_change = if_else(!is.na(lag(vte_admissions)),
                                       s_percent_change(vte_admissions,
@@ -494,6 +456,11 @@ flags <- df_mapped |>
                                                                   lag(total_admissions)),
                                                  NA),
          abs_total_admissions_percent_change = abs(total_admissions_percent_change),
+         total_admissions_sus_percent_change = if_else(!is.na(lag(total_admissions_sus)),
+                                                   s_percent_change(total_admissions_sus,
+                                                                    lag(total_admissions_sus)),
+                                                   NA),
+         abs_total_admissions_sus_percent_change = abs(total_admissions_sus_percent_change),
          percentage_percent_change = if_else(!is.na(lag(percentage)),
                                                  s_percent_change(percentage,
                                                                   lag(percentage)),
@@ -509,6 +476,10 @@ flags <- df_mapped |>
          total_admissions,
          total_admissions_percent_change,
          abs_total_admissions_percent_change,
+         total_admissions_sus_prev_q,
+         total_admissions_sus,
+         total_admissions_sus_percent_change,
+         abs_total_admissions_sus_percent_change,
          percentage_prev_q,
          percentage,
          percentage_percent_change,
@@ -516,29 +487,38 @@ flags <- df_mapped |>
   left_join(sdcs_email, join_by(org_code == org_code)) |> 
   relocate(email, .after = org_type)
 
+# all years of data for validation spreadsheet
+flags_all_years <- flags |> 
+  select(-fy, 
+         -quarter, 
+         -vte_admissions_prev_q, 
+         -total_admissions_prev_q, 
+         -total_admissions_sus_prev_q,
+         -percentage_prev_q)
+
 # vte assessed changes between current and previous quarter
 flags_prev_quarter_comparison <- flags |> 
   filter(period == time_period) |> 
   mutate(
     vte_admissions_bullet = case_when(
-    abs_vte_admissions_percent_change > 50 ~ paste0(
-      "-   Significant change in VTE risk assessed admissions from ",
+    abs_vte_admissions_percent_change > 1000 ~ paste0(
+      "-   a change in VTE risk assessed admissions from ",
       vte_admissions_prev_q, " in ", prev_q_time_period_readable, " to ",
       vte_admissions, " in ", time_period_readable,".\n"
     ),
     TRUE ~ ""
   ),
   total_admissions_bullet = case_when(
-    abs_total_admissions_percent_change > 50 ~ paste0(
-      "-   Significant change in total admissions from ",
+    abs_total_admissions_percent_change > 9.9 ~ paste0(
+      "-   a change in total admissions from ",
       total_admissions_prev_q, " in ", prev_q_time_period_readable, " to ",
       total_admissions, " in ", time_period_readable,".\n"
     ),
     TRUE ~ ""
   ),
   percentage_bullet = case_when(
-    abs_percentage_percent_change > 10 ~ paste0(
-      "-   Significant change in percentage of admitted patients risk assessed for VTE from ",
+    abs_percentage_percent_change > 20 ~ paste0(
+      "-   a change in percentage of admitted patients risk assessed for VTE from ",
       round(percentage_prev_q * 100, 1), "% in ", prev_q_time_period_readable, " to ",
       round(percentage * 100, 1), "% in ", time_period_readable,".\n"
     ),
@@ -551,7 +531,7 @@ flags_prev_quarter_comparison <- flags |>
       "Dear colleague,\n\n",
       "For the VTE risk assessment collection for ",
       org_name, " (", org_code, ") for ", time_period_readable, 
-      " we have identified the following variations \n\n",
+      " we have identified: \n\n",
       vte_admissions_bullet,
       total_admissions_bullet,
       percentage_bullet,"\n",
@@ -562,6 +542,72 @@ flags_prev_quarter_comparison <- flags |>
     TRUE ~ ""
   )
   )
+
+# //////////////////////////////////////////////////////////////////////////////
+#
+##  Automated emails ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+if (draft_emails_sus == TRUE) {
+  sus_email_drafts <- sus_admissions |> 
+    filter(org_code == "RWG") |> 
+    select(org_code, organisation_name, email, export_email) |> 
+    rowwise() |>
+    mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
+           drafts = list(
+             outlook$create_email(to = email_address,
+                                  cc = "patientsafety.analysis@nhs.net",
+                                  subject = paste0(time_period_readable,
+                                                   " VTE Submissions Query - ",
+                                                   organisation_name," (",
+                                                   org_code,")"),
+                                  body = paste(export_email))),
+           drafts = list(drafts$update(
+             from = list(emailAddress = list(
+               address = "patientsafety.analysis@nhs.net")))))
+}
+
+
+if (draft_emails_non_submitters == TRUE) {
+  non_submitters_email_drafts <- not_submitted |> 
+    select(org_code, organisation_name, email, export_email) |> 
+    rowwise() |>
+    mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
+           drafts = list(
+             outlook$create_email(to = email_address,
+                                  cc = "patientsafety.analysis@nhs.net",
+                                  subject = paste0(time_period_readable,
+                                                   " VTE Submissions Query - ",
+                                                   organisation_name," (",
+                                                   org_code,")"),
+                                  body = paste(export_email))),
+           drafts = list(drafts$update(
+             from = list(emailAddress = list(
+               address = "patientsafety.analysis@nhs.net")))))
+}
+
+if (draft_emails_dq == TRUE) {
+  dq_email_drafts <- flags_prev_quarter_comparison |> 
+    filter(org_type == "NHS acute care provider",
+           export_email != "",
+           org_code == "RRF") |> 
+    select(org_code, org_name, email, export_email) |> 
+    rowwise() |>
+    mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
+           drafts = list(
+             outlook$create_email(to = email_address,
+                                  cc = "patientsafety.analysis@nhs.net",
+                                  subject = paste0(time_period_readable,
+                                                   " VTE Submissions Query - ",
+                                                   org_name," (",
+                                                   org_code,")"),
+                                  body = paste(export_email))),
+           drafts = list(drafts$update(
+             from = list(emailAddress = list(
+               address = "patientsafety.analysis@nhs.net")))))
+}
+
 
 # No VTE risk assessed admissions in at least one month 
 zero_vte_admissions <- df_mapped |> 
