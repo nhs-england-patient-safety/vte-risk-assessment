@@ -535,7 +535,7 @@ flags_prev_quarter_comparison <- flags |>
       vte_admissions_bullet,
       total_admissions_bullet,
       percentage_bullet,"\n",
-      "This may be as a result of data changes or could be a data quality issue. We would be grateful if you could review your submissions and confirm their accuracy. If any discrepancies are identified please let us know so we can discuss potential resubmission.\n\n",
+      "We would be grateful if you could review your submissions and confirm their accuracy. If any issues are identified please let us know so we can discuss potential resubmission.\n\n",
       "Thank you,\n",
       "Patient safety team"
     ),
