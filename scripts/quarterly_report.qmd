@@ -254,7 +254,7 @@ kable(icb_table, align ="lrl")
 
 ### Percentage of total admissions risk assessed for VTE in England by total admissions
 
-Figure 7 is a funnel plot of the total admissions for each provider in the quarter against the percentage of total admissions risk assessed for VTE. The funnel plot limits have been adjusted for overdispersion. Providers that fall below the 99.8% overdispersed lower limit have been labelled in figure 7 and listed in table 7.
+Figure 7 is a funnel plot of the total admissions for each provider in the quarter against the percentage of total admissions risk assessed for VTE. The funnel plot limits have been adjusted for overdispersion. Providers that fall below the 99.8% overdispersed lower limit have been labelled in figure 7 and listed in table 8.
 
 <br>
 
