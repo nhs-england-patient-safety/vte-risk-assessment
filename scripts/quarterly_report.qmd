@@ -78,7 +78,7 @@ This data collection is a census of all patients – it is not appropriate to us
 
 ## Response rate
 
-Table 1 below summarises the number and proportion of valid submissions from NHS acute care providers. Invalid submissions are excluded from the data and are detailed in the data quality section. Children's hospitals listed in the data quality section are excluded from the count of NHS acute care providers. The number of NHS acute care providers may vary between reporting quarters due to organisational changes.
+Table 1 below summarises the number and proportion of valid submissions from NHS acute care providers. Invalid submissions are excluded from the data and are detailed in the data quality section. The increase in invalid submissions observed in recent quarters reflects the ongoing work to identify and address data quality issues with provider submissions. For the full details of organisations excluded or not submitting for this quarter, please refer to the data quality section. Children’s hospitals listed in the data quality section are excluded from the count of NHS acute care providers. The number of NHS acute care providers may vary between reporting quarters due to organisational changes.
 
 **Table 1: Number of NHS acute care providers, valid submissions, invalid submissions, non-submissions and response rate by reporting quarter**
 
@@ -379,7 +379,7 @@ Providers must collect data and submit it to the Strategic Data Collection Servi
 Data are submitted and published according to the timings below:
 
 | Timing | Process |
-|------------------------------------|------------------------------------|
+|----|----|
 | Month A (for example June) | Data are collected from patients in each provider for the quarter |
 | Month B (for example July) | Providers submit their data quarterly for the previous quarter with a deadline of the last working day of the month following the end of that quarter (for example Q1 data is submitted towards the end of July) |
 | Month C (for example August) | Data is quality assured |
