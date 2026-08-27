@@ -437,7 +437,10 @@ flags <- df_mapped |>
   group_by(period,org_code, org_name, org_type, fy, quarter) |> 
   summarise(vte_admissions = sum(number_of_vte_assessed_admissions, na.rm = TRUE),
             total_admissions = sum(total_admissions, na.rm = TRUE),
-            total_admissions_sus = sum(total_admissions_sus, na.rm = TRUE),
+            total_admissions_sus = if_else(all(is.na(total_admissions_sus)),
+                                           NA,
+                                           sum(total_admissions_sus, na.rm = TRUE)
+                                           ),
             percentage = if_else(total_admissions == 0,
                                  NA,
                                  vte_admissions/total_admissions
