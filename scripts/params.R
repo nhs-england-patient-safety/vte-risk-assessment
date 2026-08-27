@@ -1,5 +1,5 @@
 # Input the date of the report
-time_period <- "VTE-Q4-2025-26"
+time_period <- "VTE-Q1-2026-27"
 
 # Choose mode: publish, publish_legacy_mapping, local
 # publish
@@ -23,7 +23,7 @@ draft_emails_non_submitters <- FALSE
 draft_emails_dq <- FALSE
 
 # release tag of the published code
-release_tag <- "2025-26_Q4_v1"
+release_tag <- "2026-27_Q1_v1"
 
 release_url <- paste0(
   "[GitHub]",
