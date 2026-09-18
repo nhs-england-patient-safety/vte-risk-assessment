@@ -2,6 +2,96 @@ library(scales)
 
 # //////////////////////////////////////////////////////////////////////////////
 #
+## Response rate  ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+# get the min date of each reporting quarter
+quarter_date <- df_joined |>
+  group_by(period) |>
+  mutate(min_date = min(date),
+         "Reporting quarter" = paste0(substring(period, 8, 11), "/", 
+                                      substring(period, 13, 14), " ",
+                                      substring(period, 5, 6))) |>
+  select(period, "Reporting quarter", min_date) |>
+  arrange(min_date) |>
+  distinct() |> 
+  ungroup()
+
+# retrieve all active and inactive acute trusts from ods_provider_hierarchies
+all_acute_trusts_ods <- ods_provider_hierarchies |> 
+  clean_names() |> 
+  filter(nhse_organisation_type == "ACUTE TRUST") |> 
+  # remove childrens hospitals
+  filter(organisation_code != "RBS" & 
+           organisation_code != "RP4" & 
+           organisation_code != "RCU") |> 
+  select(organisation_code,organisation_name, effective_from,effective_to)
+
+# active trusts by period
+active_trusts_by_period <- quarter_date |>
+  cross_join(all_acute_trusts_ods) |>
+  mutate(
+    active = min_date >= effective_from &
+      (is.na(effective_to) | min_date <= effective_to)
+  ) |>
+  filter(active) |>
+  summarise(
+    "NHS acute care providers" = n_distinct(organisation_code),
+    .by = c(period, "Reporting quarter", min_date)
+  ) |>
+  arrange(min_date) |> 
+  # filter out pre covid for now
+  filter(min_date > "2020-01-01") |> 
+  select(-min_date)
+
+# retrieve all valid submissions from acute trusts who haven't been excluded
+valid_acute_trusts_per_q <- df_joined |>
+  arrange(date) |> 
+  # filter for acute trusts only
+  left_join(all_acute_trusts_ods, join_by(org_code == organisation_code)) |> 
+  filter(!is.na(organisation_name)) |> 
+  summarize("Valid submissions" = n_distinct(org_code),
+            .by = c(period))
+
+# non submitters
+non_submitter_response_rate <- data_quality_input |> 
+  filter(type == "no_submission" | type == "org_preparing") |> 
+  # filter by acute trusts only
+  left_join(all_acute_trusts_ods, join_by(org_code == organisation_code)) |> 
+  filter(!is.na(organisation_name)) |> 
+  summarize("Non-submissions" = n_distinct(org_code),
+            .by = c(period))
+
+# invalid submissions
+invalid_submissions_response_rate <-  data_quality_input |> 
+  filter(type == "audit") |> 
+  # filter by acute trusts only
+  left_join(all_acute_trusts_ods, join_by(org_code == organisation_code)) |> 
+  filter(!is.na(organisation_name)) |> 
+  summarize("Invalid submissions" = n_distinct(org_code),
+            .by = c(period))
+  
+# join valid submissions with active trusts by period to get response rate
+response_rate <- active_trusts_by_period |>
+  left_join(valid_acute_trusts_per_q, by = "period") |>
+  left_join(invalid_submissions_response_rate, by = "period") |>
+  left_join(non_submitter_response_rate, by = "period") |>
+  select(-period) |> 
+  mutate(
+    "Response rate (%)" = paste0(
+      round(
+        `Valid submissions` /
+          `NHS acute care providers` * 100,
+        0
+      ),
+      "%"
+    )
+  )
+
+
+# //////////////////////////////////////////////////////////////////////////////
+#
 ## % risk assessed in England ----
 #
 # //////////////////////////////////////////////////////////////////////////////

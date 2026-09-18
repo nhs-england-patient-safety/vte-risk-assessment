@@ -52,25 +52,6 @@ current_notes <- notes |>
   select(organisation_code, notes) |>
   distinct()
 
-# pivot months so we can have one row per org for the output spreadsheet
-pivot_months <- df_joined |>
-  filter(period == time_period) |>
-  select(
-    org_code,
-    number_of_vte_assessed_admissions,
-    total_admissions,
-    percentage_of_admitted_patients_risk_assessed_for_vte,
-    month
-  ) |>
-  pivot_wider(
-    names_from = month,
-    values_from = c(
-      number_of_vte_assessed_admissions,
-      total_admissions,
-      percentage_of_admitted_patients_risk_assessed_for_vte
-    )
-  )
-
 # excluded data (taken from our manual list in sharepoint)
 excluded <- data_quality_input |>
   filter(period == time_period, excluded_data == "excluded") |>
@@ -218,15 +199,15 @@ org_name_updates_required <- reslib$load_dataframe(
 
 
 # check for NAs / nulls
-validation_na <- df_joined |>
+validation_na <- df_mapped |>
   filter(if_any(everything(), is.na))
 
 # check for non assigned org types
-validation_join <- df_joined |>
+validation_join <- df_mapped |>
   filter(is.na(org_type))
 
-# number of denomindator >1
-num_over_den <- df_joined |>
+# number of denominator >1
+num_over_den <- df_mapped |>
   filter(period == time_period) |>
   mutate(num_over_den_flag = if_else(number_of_vte_assessed_admissions / 
                                        total_admissions > 1, "TRUE", NA)) |>
@@ -240,7 +221,7 @@ num_over_den <- df_joined |>
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-submitted_in_period <- df_joined |>
+submitted_in_period <- df_mapped |>
   filter(period == time_period) |>
   select(org_code) |>
   distinct()
@@ -301,28 +282,12 @@ not_submitted <- sdcs_list |>
 #
 # //////////////////////////////////////////////////////////////////////////////
 
-
-# cleaning der month into actual date ready for joining
-admissions_data <- admissions |>
-  mutate(
-    month = as.numeric(substr(der_activity_month, 5, 6)),
-    year = as.numeric(substr(der_activity_month, 1, 4)),
-    date = lubridate::make_date(
-      year = year,
-      month = month,
-      day = 1
-    )
-  ) |>
-  rename(total_admissions_sus = total_admissions,
-         provider_code = der_provider_code) |>
-  select(date, provider_code, total_admissions_sus)
-
 # highlighting changes between submitted and SUS data
-sus_admissions <- df_joined |>
+sus_admissions <- df_mapped |>
   select(period, org_code, month, date, total_admissions) |>
   left_join(mapping, join_by(org_code == organisation_code)) |>
   left_join(sdcs_email, join_by(org_code == org_code)) |>
-  left_join(admissions_data, 
+  left_join(admissions, 
             join_by(org_code == provider_code, date == date)) |>
   # calculating difference in admissions
   mutate(sus_change = 100 * (total_admissions_sus - total_admissions) /
@@ -460,22 +425,149 @@ acute_trusts_missing_from_ods <- ods_provider_hierarchies |>
 
 # //////////////////////////////////////////////////////////////////////////////
 #
-##  Automated sus and non_submitters emails
+##  Flagging DQ issues across quarters ----
+#
+# //////////////////////////////////////////////////////////////////////////////
+
+# Summarise all three months in the quarter and highlight differences
+flags <- df_mapped |> 
+  filter(org_code != "X26") |> 
+  left_join(admissions, 
+            join_by(org_code == provider_code, date == date)) |>
+  group_by(period,org_code, org_name, org_type, fy, quarter) |> 
+  summarise(vte_admissions = sum(number_of_vte_assessed_admissions, na.rm = TRUE),
+            total_admissions = sum(total_admissions, na.rm = TRUE),
+            total_admissions_sus = if_else(all(is.na(total_admissions_sus)),
+                                           NA,
+                                           sum(total_admissions_sus, na.rm = TRUE)
+                                           ),
+            percentage = if_else(total_admissions == 0,
+                                 NA,
+                                 vte_admissions/total_admissions
+                                 ),
+            .groups = "drop") |> 
+  group_by(org_code) |>
+  arrange(org_code, fy, quarter, .by_group = TRUE) |> 
+  mutate(vte_admissions_prev_q = lag(vte_admissions),
+         total_admissions_prev_q = lag(total_admissions),
+         total_admissions_sus_prev_q = lag(total_admissions_sus),
+         percentage_prev_q = lag(percentage),
+         vte_admissions_percent_change = if_else(!is.na(lag(vte_admissions)),
+                                      s_percent_change(vte_admissions,
+                                                       lag(vte_admissions)),
+                                      NA),
+         abs_vte_admissions_percent_change = abs(vte_admissions_percent_change),
+         total_admissions_percent_change = if_else(!is.na(lag(total_admissions)),
+                                                 s_percent_change(total_admissions,
+                                                                  lag(total_admissions)),
+                                                 NA),
+         abs_total_admissions_percent_change = abs(total_admissions_percent_change),
+         total_admissions_sus_percent_change = if_else(!is.na(lag(total_admissions_sus)),
+                                                   s_percent_change(total_admissions_sus,
+                                                                    lag(total_admissions_sus)),
+                                                   NA),
+         abs_total_admissions_sus_percent_change = abs(total_admissions_sus_percent_change),
+         percentage_percent_change = if_else(!is.na(lag(percentage)),
+                                                 s_percent_change(percentage,
+                                                                  lag(percentage)),
+                                                 NA),
+         abs_percentage_percent_change = abs(percentage_percent_change)) |> 
+  ungroup() |> 
+  select(period:quarter,
+         vte_admissions_prev_q,
+         vte_admissions,
+         vte_admissions_percent_change,
+         abs_vte_admissions_percent_change,
+         total_admissions_prev_q,
+         total_admissions,
+         total_admissions_percent_change,
+         abs_total_admissions_percent_change,
+         total_admissions_sus_prev_q,
+         total_admissions_sus,
+         total_admissions_sus_percent_change,
+         abs_total_admissions_sus_percent_change,
+         percentage_prev_q,
+         percentage,
+         percentage_percent_change,
+         abs_percentage_percent_change) |> 
+  left_join(sdcs_email, join_by(org_code == org_code)) |> 
+  relocate(email, .after = org_type)
+
+# all years of data for validation spreadsheet
+flags_all_years <- flags |> 
+  select(-fy, 
+         -quarter, 
+         -vte_admissions_prev_q, 
+         -total_admissions_prev_q, 
+         -total_admissions_sus_prev_q,
+         -percentage_prev_q)
+
+# vte assessed changes between current and previous quarter
+flags_prev_quarter_comparison <- flags |> 
+  filter(period == time_period) |> 
+  mutate(
+    vte_admissions_bullet = case_when(
+    abs_vte_admissions_percent_change > 1000 ~ paste0(
+      "-   a change in VTE risk assessed admissions from ",
+      vte_admissions_prev_q, " in ", prev_q_time_period_readable, " to ",
+      vte_admissions, " in ", time_period_readable,".\n"
+    ),
+    TRUE ~ ""
+  ),
+  total_admissions_bullet = case_when(
+    abs_total_admissions_percent_change > 9.9 ~ paste0(
+      "-   a change in total admissions from ",
+      total_admissions_prev_q, " in ", prev_q_time_period_readable, " to ",
+      total_admissions, " in ", time_period_readable,".\n"
+    ),
+    TRUE ~ ""
+  ),
+  percentage_bullet = case_when(
+    abs_percentage_percent_change > 20 ~ paste0(
+      "-   a change in percentage of admitted patients risk assessed for VTE from ",
+      round(percentage_prev_q * 100, 1), "% in ", prev_q_time_period_readable, " to ",
+      round(percentage * 100, 1), "% in ", time_period_readable,".\n"
+    ),
+    TRUE ~ ""
+  ),
+  export_email = case_when(vte_admissions_bullet != "" | 
+                             total_admissions_bullet != "" |
+                             percentage_bullet != "" ~
+    paste0(
+      "Dear colleague,\n\n",
+      "For the VTE risk assessment collection for ",
+      org_name, " (", org_code, ") for ", time_period_readable, 
+      " we have identified: \n\n",
+      vte_admissions_bullet,
+      total_admissions_bullet,
+      percentage_bullet,"\n",
+      "We would be grateful if you could review your submissions and confirm their accuracy. If any issues are identified please let us know so we can discuss potential resubmission.\n\n",
+      "Thank you,\n",
+      "Patient safety team"
+    ),
+    TRUE ~ ""
+  )
+  )
+
+# //////////////////////////////////////////////////////////////////////////////
+#
+##  Automated emails ----
 #
 # //////////////////////////////////////////////////////////////////////////////
 
 if (draft_emails_sus == TRUE) {
   sus_email_drafts <- sus_admissions |> 
-    filter(abs_sus_total_change > 100) |> 
+    filter(org_code == "RWG") |> 
     select(org_code, organisation_name, email, export_email) |> 
     rowwise() |>
     mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
            drafts = list(
              outlook$create_email(to = email_address,
-                                  subject = paste(time_period_readable,
-                                                  "VTE Submissions Query -",
-                                                  organisation_name,
-                                                  org_code),
+                                  cc = "patientsafety.analysis@nhs.net",
+                                  subject = paste0(time_period_readable,
+                                                   " VTE Submissions Query - ",
+                                                   organisation_name," (",
+                                                   org_code,")"),
                                   body = paste(export_email))),
            drafts = list(drafts$update(
              from = list(emailAddress = list(
@@ -490,79 +582,41 @@ if (draft_emails_non_submitters == TRUE) {
     mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
            drafts = list(
              outlook$create_email(to = email_address,
-                                  subject = paste(time_period_readable,
-                                                  "VTE Submissions Query -",
-                                                  organisation_name,
-                                                  org_code),
+                                  cc = "patientsafety.analysis@nhs.net",
+                                  subject = paste0(time_period_readable,
+                                                   " VTE Submissions Query - ",
+                                                   organisation_name," (",
+                                                   org_code,")"),
                                   body = paste(export_email))),
            drafts = list(drafts$update(
              from = list(emailAddress = list(
                address = "patientsafety.analysis@nhs.net")))))
 }
 
-# //////////////////////////////////////////////////////////////////////////////
-#
-##  Flagging DQ issues across quarters ----
-#
-# //////////////////////////////////////////////////////////////////////////////
+if (draft_emails_dq == TRUE) {
+  dq_email_drafts <- flags_prev_quarter_comparison |> 
+    filter(org_type == "NHS acute care provider",
+           export_email != "",
+           org_code == "RRF") |> 
+    select(org_code, org_name, email, export_email) |> 
+    rowwise() |>
+    mutate(email_address = list(strsplit(email, ";\\s")[[1]]),
+           drafts = list(
+             outlook$create_email(to = email_address,
+                                  cc = "patientsafety.analysis@nhs.net",
+                                  subject = paste0(time_period_readable,
+                                                   " VTE Submissions Query - ",
+                                                   org_name," (",
+                                                   org_code,")"),
+                                  body = paste(export_email))),
+           drafts = list(drafts$update(
+             from = list(emailAddress = list(
+               address = "patientsafety.analysis@nhs.net")))))
+}
 
-# Summarise all three months in the quarter and highlight differences
-flags <- df_joined |> 
-  filter(org_code != "X26") |> 
-  group_by(period,org_code, org_name, fy, quarter) |> 
-  summarise(vte_admissions = sum(number_of_vte_assessed_admissions, na.rm = TRUE),
-            total_admissions = sum(total_admissions, na.rm = TRUE),
-            percentage = vte_admissions/total_admissions,
-            .groups = "drop") |> 
-  group_by(org_code) |>
-  arrange(org_code, fy, quarter, .by_group = TRUE) |> 
-  mutate(vte_admissions_prev_q = lag(vte_admissions),
-         total_admissions_prev_q = lag(total_admissions),
-         percentage_prev_q = lag(percentage),
-         vte_admissions_percent_change = if_else(!is.na(lag(vte_admissions)),
-                                      s_percent_change(vte_admissions,
-                                                       lag(vte_admissions)),
-                                      NA),
-         total_admissions_percent_change = if_else(!is.na(lag(total_admissions)),
-                                                 s_percent_change(total_admissions,
-                                                                  lag(total_admissions)),
-                                                 NA),
-         percentage_percent_change = if_else(!is.na(lag(percentage)),
-                                                 s_percent_change(percentage,
-                                                                  lag(percentage)),
-                                                 NA)) |> 
-  ungroup() |> 
-  select(period:quarter,
-         vte_admissions_prev_q,
-         vte_admissions,
-         vte_admissions_percent_change,
-         total_admissions_prev_q,
-         total_admissions,
-         total_admissions_percent_change,
-         percentage_prev_q,
-         percentage,
-         percentage_percent_change)
-
-# vte assessed changes between current and previous quarter
-flags_vte_assessed <- flags |> 
-  filter(period == time_period) |> 
-  mutate(vte_admissions_percent_change = abs(vte_admissions_percent_change)) |> 
-  arrange(desc(vte_admissions_percent_change))
-
-# total admissions changes between current and previous quarter
-flags_total_admissions <- flags |> 
-  filter(period == time_period) |> 
-  mutate(total_admissions_percent_change = abs(total_admissions_percent_change)) |> 
-  arrange(desc(total_admissions_percent_change))
-
-# risk assessed percentage changes between current and previous quarter
-flags_risk_assessed <- flags |> 
-  filter(period == time_period) |> 
-  mutate(percentage_percent_change = abs(percentage_percent_change)) |> 
-  arrange(desc(percentage_percent_change))
 
 # No VTE risk assessed admissions in at least one month 
-zero_vte_admissions <- df_joined |> 
+zero_vte_admissions <- df_mapped |> 
   filter(period == time_period,
          number_of_vte_assessed_admissions == 0) |> 
   select(c(org_code, org_name, number_of_vte_assessed_admissions, 

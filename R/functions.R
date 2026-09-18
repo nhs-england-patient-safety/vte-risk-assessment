@@ -139,7 +139,9 @@ upload_to_sharepoint <- function(file, subfolder = NULL) {
 
 # Symmetrical Percentage Change
 s_percent_change <- function(new, old){
-  round(((2 * (new - old)) / (new + old)) * 100, 0)
+  result <- ((2 * (new - old)) / (new + old)) * 100
+  result <- ifelse((new + old) == 0, NA, result)
+  round(result, 0)
 }
 
 # api query

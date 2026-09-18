@@ -62,10 +62,8 @@ names <- list(
   "excluded_data" = excluded,
   "sus_admissions" = sus_admissions,
   "no_sus_admissions" = no_sus_admissions,
-  "flags_all_years" = flags,
-  "flags_vte_assessed" = flags_vte_assessed,
-  "flags_total_admissions" = flags_total_admissions,
-  "flags_risk_assessed" = flags_risk_assessed,
+  "flags_all_years" = flags_all_years,
+  "flags_prev_quarter_comparison" = flags_prev_quarter_comparison,
   "zero_vte_admissions" = zero_vte_admissions,
   "org_name_updates" = org_name_updates_required,
   "inactive_and_succeeded" = inactive_and_successor_orgs,
@@ -108,6 +106,7 @@ write_csv(ods_provider_hierarchies,
 #  Upload files  ----
 #
 # //////////////////////////////////////////////////////////////////////////////
+
 
 upload_to_sharepoint(time_period_csv)
 upload_to_sharepoint(time_period_xlsx)
